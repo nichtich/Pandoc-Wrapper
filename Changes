@@ -1,4 +1,6 @@
 Revision history for Pandoc Perl module
 
 {{$NEXT}}
+
+0.1.0  2016-10-10 10:37:02 CEST
     - create initial release
