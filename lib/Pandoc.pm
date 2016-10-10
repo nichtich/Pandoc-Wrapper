@@ -112,6 +112,16 @@ __END__
 
 =encoding utf-8
 
+=begin markdown
+
+# STATUS
+
+[![Build Status](https://travis-ci.org/nichtich/Pandoc-Wrapper.svg)](https://travis-ci.org/nichtich/Pandoc-Wrapper)
+[![Coverage Status](https://coveralls.io/repos/nichtich/Pandoc-Wrapper/badge.svg)](https://coveralls.io/r/nichtich/Pandoc-Wrapper)
+[![Kwalitee Score](http://cpants.cpanauthors.org/dist/Pandoc.png)](http://cpants.cpanauthors.org/dist/Pandoc)
+
+=end markdown
+
 =head1 SYNOPSIS
 
   use Pandoc;             # check at first use
@@ -138,15 +148,15 @@ __END__
 =head1 DESCRIPTION
 
 This module provides a Perl interface to John MacFarlane's
-L<Pandoc|http://pandoc.org> document converter. The module exports function
-C<pandoc> by default.
+L<Pandoc|http://pandoc.org> document converter. The module exports utility
+function C<pandoc> but it can also be used as class.
 
 =head1 FUNCTIONS
 
-=head2 pandoc @arguments [, \%options ]
+=head2 pandoc [ @arguments [, \%options ] ]
 
-Executes the pandoc executable with given command line arguments and
-input/output/error redirected as specified with the following options:
+Runs the pandoc executable with given command line arguments and
+input/output/error redirected, as specified with the following options:
 
 =over
 
@@ -161,29 +171,29 @@ input/output/error redirected as specified with the following options:
 The options correspond to arguments C<$stdin>, C<$stdout>, and C<$stderr> of
 L<IPC::Run3>, see there for details.
 
-The function returns C<0> on success. Otherwise it returns the the exit code of
-pandoc or C<-1> if execution failed.
-
-If called without arguments and options, returns a singleton instance of class
-Pandoc with information about the executable version of pandoc or C<undef> if
-no pandoc executable was found.
+If called without arguments and options, the function returns a singleton
+instance of class Pandoc to access information about the executable version of
+pandoc, or C<undef> if no pandoc executable was found.  If called with
+arguments and/or options, the function returns C<0> on success.  Otherwise it
+returns the the exit code of pandoc executable or C<-1> if execution failed.
 
 =head1 METHODS
 
 =head2 new
 
-Create a new instance of class Pandoc or throws an exception if no pandoc
-executable was found. Using this constructor is not recommended unless you
-explicitly want to call C<pandoc --version>, for instance because a the system
-environment has changed during runtime.
+Create a new instance of class Pandoc or throw an exception if no pandoc
+executable was found. Repeated use of this constructor is not recommended
+unless you explicitly want to call C<pandoc --version>, for instance because a
+the system environment has changed during runtime.
 
-=head2 run( @arguments, \%options )
+=head2 run( [ @arguments, \%options ] )
 
-Execute the pandoc executable like function C<pandoc>.
+Execute the pandoc executable (see function C<pandoc> above).
 
-=head2 version( $version )
+=head2 version( [ $version ] )
 
-Return the pandoc version if it is at least as new as a given version.
+Return the pandoc version if it is at least as new as a given version or if no
+argument was provided.
 
 =head2 require( $version )
 
@@ -191,7 +201,7 @@ Throw an error if the pandoc version is lower than a given version.
 
 =head1 SEE ALSO
 
-Use L<Pandoc:Elements> for more elaborate document processing based on Pandoc.
+Use L<Pandoc::Elements> for more elaborate document processing based on Pandoc.
 Other Pandoc related but outdated modules at CPAN include
 L<Orze::Sources::Pandoc> and L<App::PDoc>.
 
