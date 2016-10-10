@@ -1,0 +1,26 @@
+language: perl
+sudo: false
+perl:
+  - "5.24"
+  - "5.22"
+  - "5.20"
+  - "5.18"
+  - "5.16"
+  - "5.14"
+  - "5.12"
+
+addons:
+  apt:
+    packages:
+      - pandoc
+
+install:
+  - cpanm --installdeps .
+  - cpanm --quiet --notest --skip-satisfied Dist::Milla
+
+script:
+  - milla smoke --release --author
+
+after_success:
+  - cpanm --quiet --notest --skip-satisfied Devel::Cover::Report::Coveralls
+  - perl Build.PL && ./Build build && cover -test -report coveralls

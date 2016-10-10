@@ -1,0 +1,6 @@
+/Pandoc-*
+/.build
+/_build*
+/Build
+MYMETA.*
+/.prove
