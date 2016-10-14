@@ -3,6 +3,8 @@ use strict;
 use warnings;
 use 5.010;
 
+use utf8;
+
 =head1 NAME
 
 Pandoc - interface to the Pandoc document converter
@@ -57,12 +59,19 @@ sub run {
     my $opts   = ref $_[-1] ? pop @_ : {};
     my @args   = @_;
 
-    my $in  = $opts->{in};
-    my $out = $opts->{out};
-    my $err = $opts->{err};
+    my %opts = ( %$opts, return_if_system_error => 1 );
+    my $in  = $opts{in};
+    my $out = $opts{out};
+    my $err = $opts{err};
+    for my $io ( qw[ in out err ] ) {
+        $opts{"binmode_std$io"} //= $opts{binmode} if $opts{binmode};
+        if ( 'SCALAR' eq ref $opts{$io} ) {
+            next unless utf8::is_utf8(${$opts{$io}});
+            $opts{"binmode_std$io"} //= ':utf8'; # or better :encoding(UTF-8) ?
+        }
+    }
 
-    run3 ['pandoc', @_ ], $in, $out, $err, 
-        { return_if_system_error => 1 };
+    run3 ['pandoc', @_ ], $in, $out, $err, \%opts;
 
     return $? == -1 ? -1 : $? >> 8;
 }
