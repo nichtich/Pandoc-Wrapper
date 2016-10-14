@@ -60,7 +60,8 @@ sub run {
     my $pandoc = shift;
 
     # We shift/pop these args but want to remember what reftype they were
-    my %is_ref = ( args => ('ARRAY' eq ref $_[0] ), opts => ('HASH' eq ref $_[-1]) );
+    my %is_ref = ( args => ('ARRAY' eq ref $_[0] ), 
+                   opts => ('HASH' eq ref $_[-1]) );
     my @args   = $is_ref{args} ? @{ shift @_ } : ();
     my %opts   = $is_ref{opts} ? %{pop @_} : ();
     if ( @_ ) {
