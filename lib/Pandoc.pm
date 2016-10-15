@@ -54,7 +54,7 @@ sub pandoc(@) { ## no critic
 
 sub run {
     my $pandoc = shift;
-    my $opts   = ref $_[-1] ? pop @_ : {};
+    my $opts   = 'HASH' eq ref $_[-1] ? pop @_ : {};
     my @args   = @_;
 
     my $in  = $opts->{in};
