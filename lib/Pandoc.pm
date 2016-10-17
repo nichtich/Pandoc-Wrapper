@@ -13,6 +13,8 @@ Pandoc - interface to the Pandoc document converter
 
 our $VERSION = '0.1.0';
 
+# Better throw all errors with croak since run() needs to throw arg error at callsite
+use Carp qw[ croak ];
 use IPC::Run3;
 use parent 'Exporter';
 our @EXPORT = qw(pandoc);
@@ -35,7 +37,7 @@ sub new {
     run3 ['pandoc','-v'], \$in, \$out, \undef,
         { return_if_system_error => 1 };
 
-    die "pandoc executable not found\n" unless
+    croak "pandoc executable not found\n" unless
         $out and $out =~ /^pandoc (\d+(\.\d+)+)/;
 
     my $pandoc = bless { version => $1 }, 'Pandoc';
@@ -54,15 +56,36 @@ sub pandoc(@) { ## no critic
     }
 }
 
+use DDP alias => 'pp', use_prototypes => 0;
+
 sub run {
     my $pandoc = shift;
-    my $opts   = ref $_[-1] ? pop @_ : {};
-    my @args   = @_;
 
-    my %opts = ( %$opts, return_if_system_error => 1 );
+    # We shift/pop these args but want to remember what reftype they were
+    my %is_ref = ( args => ('ARRAY' eq ref $_[0] ), opts => ('HASH' eq ref $_[-1]) );
+    my @args   = $is_ref{args} ? @{ shift @_ } : ();
+    my %opts   = $is_ref{opts} ? %{pop @_} : ();
+    if ( @_ ) {
+        if ( !$is_ref{args} ) {
+            # default to the old behavior
+            @args = @_;
+        }
+        elsif ( $is_ref{args} and !$is_ref{opts} and (@_ % 2 == 0) ) {
+            # if args were passed by reference other arguments are options
+            %opts = @_;
+        }
+        else {
+            # passed both the args and opts by ref,
+            # so other arguments don't make sense;
+            # or passed args by ref and an odd-length list
+            croak 'Too many or ambiguous arguments to ->run()';
+        }
+    }
+
     my $in  = $opts{in};
     my $out = $opts{out};
     my $err = $opts{err};
+    $opts{return_if_system_error} = 1;
     for my $io ( qw[ in out err ] ) {
         $opts{"binmode_std$io"} //= $opts{binmode} if $opts{binmode};
         if ( 'SCALAR' eq ref $opts{$io} ) {
@@ -71,7 +94,7 @@ sub run {
         }
     }
 
-    run3 ['pandoc', @_ ], $in, $out, $err, \%opts;
+    run3 ['pandoc', @args ], $in, $out, $err, \%opts;
 
     return $? == -1 ? -1 : $? >> 8;
 }
@@ -82,7 +105,7 @@ sub require {
         : do { ref $_[0] ? shift : shift->new };
     my $version = shift;
 
-    die "pandoc $version required, only found ".$pandoc->{version}."\n"
+    croak "pandoc $version required, only found ".$pandoc->{version}."\n"
         unless $pandoc->version($version);
 }
 
@@ -93,7 +116,7 @@ sub version {
 
     if (@_) {
         my $version = shift;
-        die "invalid version number: $version\n"
+        croak "invalid version number: $version\n"
             if $version !~ /^(\d+(\.\d+)*)$/;
 
         my @got = split /\./, $pandoc->{version};
