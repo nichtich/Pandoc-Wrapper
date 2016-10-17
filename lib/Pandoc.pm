@@ -56,8 +56,6 @@ sub pandoc(@) { ## no critic
     }
 }
 
-use DDP alias => 'pp', use_prototypes => 0;
-
 sub run {
     my $pandoc = shift;
 
