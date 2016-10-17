@@ -61,8 +61,8 @@ sub run {
 
     # We shift/pop these args but want to remember what reftype they were
     my %is_ref = ( args => ('ARRAY' eq ref $_[0] ), opts => ('HASH' eq ref $_[-1]) );
-    my @args   = $is_ref{args} ? @{ shift @_ } : ();
-    my %opts   = $is_ref{opts} ? %{pop @_} : ();
+    my @args   = $is_ref{args} ? @{ shift @_ } : ();    # arguments to pandoc
+    my %opts   = $is_ref{opts} ? %{pop @_} : ();        # options/arguments to run3
     if ( @_ ) {
         if ( !$is_ref{args} ) {
             # default to the old behavior
@@ -84,11 +84,12 @@ sub run {
     my $out = $opts{out};
     my $err = $opts{err};
     $opts{return_if_system_error} = 1;
+    # allow passing a single binmode for unspecified binmode_std* options
     for my $io ( qw[ in out err ] ) {
         $opts{"binmode_std$io"} //= $opts{binmode} if $opts{binmode};
         if ( 'SCALAR' eq ref $opts{$io} ) {
             next unless utf8::is_utf8(${$opts{$io}});
-            $opts{"binmode_std$io"} //= ':utf8'; # or better :encoding(UTF-8) ?
+            $opts{"binmode_std$io"} //= ':encoding(UTF-8)'; # safer than :utf8 !
         }
     }
 
