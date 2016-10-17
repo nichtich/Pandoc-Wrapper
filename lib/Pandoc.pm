@@ -3,6 +3,8 @@ use strict;
 use warnings;
 use 5.010;
 
+use utf8;
+
 =head1 NAME
 
 Pandoc - interface to the Pandoc document converter
@@ -11,6 +13,8 @@ Pandoc - interface to the Pandoc document converter
 
 our $VERSION = '0.1.0';
 
+# Better throw all errors with croak since run() needs to throw arg error at callsite
+use Carp qw[ croak ];
 use IPC::Run3;
 use parent 'Exporter';
 our @EXPORT = qw(pandoc);
@@ -33,7 +37,7 @@ sub new {
     run3 ['pandoc','-v'], \$in, \$out, \undef,
         { return_if_system_error => 1 };
 
-    die "pandoc executable not found\n" unless
+    croak "pandoc executable not found\n" unless
         $out and $out =~ /^pandoc (\d+(\.\d+)+)/;
 
     my $pandoc = bless { version => $1 }, 'Pandoc';
@@ -54,15 +58,42 @@ sub pandoc(@) { ## no critic
 
 sub run {
     my $pandoc = shift;
-    my $opts   = 'HASH' eq ref $_[-1] ? pop @_ : {};
-    my @args   = @_;
 
-    my $in  = $opts->{in};
-    my $out = $opts->{out};
-    my $err = $opts->{err};
+    # We shift/pop these args but want to remember what reftype they were
+    my %is_ref = ( args => ('ARRAY' eq ref $_[0] ), opts => ('HASH' eq ref $_[-1]) );
+    my @args   = $is_ref{args} ? @{ shift @_ } : ();    # arguments to pandoc
+    my %opts   = $is_ref{opts} ? %{pop @_} : ();        # options/arguments to run3
+    if ( @_ ) {
+        if ( !$is_ref{args} ) {
+            # default to the old behavior
+            @args = @_;
+        }
+        elsif ( $is_ref{args} and !$is_ref{opts} and (@_ % 2 == 0) ) {
+            # if args were passed by reference other arguments are options
+            %opts = @_;
+        }
+        else {
+            # passed both the args and opts by ref,
+            # so other arguments don't make sense;
+            # or passed args by ref and an odd-length list
+            croak 'Too many or ambiguous arguments to ->run()';
+        }
+    }
 
-    run3 ['pandoc', @_ ], $in, $out, $err, 
-        { return_if_system_error => 1 };
+    my $in  = $opts{in};
+    my $out = $opts{out};
+    my $err = $opts{err};
+    $opts{return_if_system_error} = 1;
+    # allow passing a single binmode for unspecified binmode_std* options
+    for my $io ( qw[ in out err ] ) {
+        $opts{"binmode_std$io"} //= $opts{binmode} if $opts{binmode};
+        if ( 'SCALAR' eq ref $opts{$io} ) {
+            next unless utf8::is_utf8(${$opts{$io}});
+            $opts{"binmode_std$io"} //= ':encoding(UTF-8)'; # safer than :utf8 !
+        }
+    }
+
+    run3 ['pandoc', @args ], $in, $out, $err, \%opts;
 
     return $? == -1 ? -1 : $? >> 8;
 }
@@ -73,7 +104,7 @@ sub require {
         : do { ref $_[0] ? shift : shift->new };
     my $version = shift;
 
-    die "pandoc $version required, only found ".$pandoc->{version}."\n"
+    croak "pandoc $version required, only found ".$pandoc->{version}."\n"
         unless $pandoc->version($version);
 }
 
@@ -84,7 +115,7 @@ sub version {
 
     if (@_) {
         my $version = shift;
-        die "invalid version number: $version\n"
+        croak "invalid version number: $version\n"
             if $version !~ /^(\d+(\.\d+)*)$/;
 
         my @got = split /\./, $pandoc->{version};
@@ -132,8 +163,10 @@ __END__
   pandoc 'input.md', -o => 'output.html';
   pandoc -f => 'html', -t => 'markdown', { in => \$html, out => \$md };
 
-  # alternative syntax
+  # alternative syntaxes
   pandoc->run('input.md', -o => 'output.html');
+  pandoc [ -f => 'html', -t => 'markdown' ], in => \$html, out => \$md;
+  pandoc [ -f => 'html', -t => 'markdown' ], { in => \$html, out => \$md };
 
   # check executable
   pandoc or die "pandoc executable not found";
@@ -155,8 +188,55 @@ function C<pandoc> but it can also be used as class.
 
 =head2 pandoc [ @arguments [, \%options ] ]
 
-Runs the pandoc executable with given command line arguments and
-input/output/error redirected, as specified with the following options:
+=head2 pandoc [ \@arguments [, %options ] ]
+
+=head2 pandoc [ \@arguments [, \%options ] ]
+
+Runs the pandoc executable with given command line arguments and options
+and input/output/error redirected, as specified with the in/out/err
+L<options|/"Options">.
+
+Either of C<@arguments> and C<%options>, or both, may be passed as an
+array or hash reference respectively. The items of the argument list to
+C<pandoc()> is interpreted according to these rules:
+
+=over
+
+=item If the first item is an array ref and the last is a hash ref
+
+these are C<\@arguments> and C<\%options> respectively and no other
+items are allowed.
+
+=item If the first item is an array ref and the last is I<not> a hash ref
+
+the first item is C<\@arguments> and the remaining items if any
+(of which there must be an even number) are C<%options>.
+
+This is useful in the common case where the command line arguments are
+the same over multiple calls, while the in/out/err L<options|/"Options">
+are different for each call.
+
+=item If the first item is I<not> an array ref and the last is a hash ref
+
+the last item is C<\%options> and the preceding items if any are
+C<@arguments>.
+
+=item If I<neither> the first item is an array ref I<nor> the last is a hash ref
+
+All the items (if any) are C<@arguments>.
+
+=back
+
+Note that C<\@arguments> must be the first item and C<\%options> must be
+the last, but either may be an empty array/hash reference.
+
+If called without arguments and options, the function returns a singleton
+instance of class Pandoc to access information about the executable version of
+pandoc, or C<undef> if no pandoc executable was found.  If called with
+arguments and/or options, the function returns C<0> on success.  Otherwise it
+returns the the exit code of pandoc executable or C<-1> if execution failed.
+
+=head3 Options
 
 =over
 
@@ -166,16 +246,41 @@ input/output/error redirected, as specified with the following options:
 
 =item err
 
+
+These options correspond to arguments C<$stdin>, C<$stdout>, and
+C<$stderr> of L<IPC::Run3>, see there for details.
+
+=item binmode_stdin => $iomode
+
+=item binmode_stdout => $iomode
+
+=item binmode_stderr => $iomode
+
+These options correspond to the like-named options to L<IPC::Run3>, see
+there for details.
+
+=item binmode => $iomode
+
+If defined any binmode_stdin/binmode_stdout/binmode_stderr option which
+is undefined will be set to C<$iomode>.
+
 =back
 
-The options correspond to arguments C<$stdin>, C<$stdout>, and C<$stderr> of
-L<IPC::Run3>, see there for details.
+For convenience the C<pandoc> function (I<after> checking the C<binmode>
+option) checks the contents of any scalar references passed to the
+in/out/err options with
+L<< utf8::is_utf8()|utf8/"* C<$flag = utf8::is_utf8($string)>" >>
+and sets the binmode_stdin/binmode_stdout/binmode_stderr options to
+C<:encoding(UTF-8)> if the corresponding scalar is marked as UTF-8 and
+the respective option is undefined. Since all pandoc executable
+input/output must be UTF-8 encoded this is convenient if you run with
+L<use utf8|utf8>, as you then don't need to set the binmode options at
+all (nor L<encode/decode|Encode>) when passing input/output scalar
+references.
 
-If called without arguments and options, the function returns a singleton
-instance of class Pandoc to access information about the executable version of
-pandoc, or C<undef> if no pandoc executable was found.  If called with
-arguments and/or options, the function returns C<0> on success.  Otherwise it
-returns the the exit code of pandoc executable or C<-1> if execution failed.
+The C<return_if_system_error> option of L<IPC::Run3> is set to true
+automatically; the C<pandoc> function returns the exit code from the
+pandoc executable.
 
 =head1 METHODS
 
@@ -183,10 +288,14 @@ returns the the exit code of pandoc executable or C<-1> if execution failed.
 
 Create a new instance of class Pandoc or throw an exception if no pandoc
 executable was found. Repeated use of this constructor is not recommended
-unless you explicitly want to call C<pandoc --version>, for instance because a
+unless you explicitly want to call C<pandoc --version>, for instance because
 the system environment has changed during runtime.
 
 =head2 run( [ @arguments, \%options ] )
+
+=head2 run( [ \@arguments, %options ] )
+
+=head2 run( [ \@arguments, \%options ] )
 
 Execute the pandoc executable (see function C<pandoc> above).
 
