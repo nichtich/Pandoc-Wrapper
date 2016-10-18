@@ -13,21 +13,21 @@ Pandoc - interface to the Pandoc document converter
 
 our $VERSION = '0.1.0';
 
-# Better throw all errors with croak since run() needs to throw arg error at callsite
-use Carp qw[ croak ];
+use Carp 'croak';
 use IPC::Run3;
 use parent 'Exporter';
 our @EXPORT = qw(pandoc);
 
 our $PANDOC;
+our $PANDOC_VERSION_SPEC = qr/^(\d+(\.\d+)*)$/;
 
 sub import {
-    my ($version) = grep { $_ =~ qr/^(\d+(\.\d+)+)$/ } @_;
+    my ($version) = grep { $_ =~ $PANDOC_VERSION_SPEC } @_;
     if ($version) {
         $PANDOC = Pandoc->new;
         $PANDOC->require($version);
     }
-    Pandoc->export_to_level(1, grep { $_ !~ qr/^(\d+(\.\d+)+)$/ } @_ );
+    Pandoc->export_to_level(1, grep { $_ !~ $PANDOC_VERSION_SPEC } @_ );
 }
 
 sub new {
@@ -77,7 +77,7 @@ sub run {
             # passed both the args and opts by ref,
             # so other arguments don't make sense;
             # or passed args by ref and an odd-length list
-            croak 'Too many or ambiguous arguments to ->run()';
+            croak 'Too many or ambiguous arguments';
         }
     }
 
@@ -85,11 +85,12 @@ sub run {
     my $out = $opts{out};
     my $err = $opts{err};
     $opts{return_if_system_error} = 1;
+
     for my $io ( qw[ in out err ] ) {
         $opts{"binmode_std$io"} //= $opts{binmode} if $opts{binmode};
         if ( 'SCALAR' eq ref $opts{$io} ) {
             next unless utf8::is_utf8(${$opts{$io}});
-            $opts{"binmode_std$io"} //= ':utf8'; # or better :encoding(UTF-8) ?
+            $opts{"binmode_std$io"} //= ':encoding(UTF-8)';
         }
     }
 
@@ -113,10 +114,10 @@ sub version {
     $pandoc = do { $PANDOC //= Pandoc->new } if $pandoc eq 'Pandoc'; 
     return unless $pandoc and $pandoc->{version};
 
-    if (@_) {
+    if (@_) { # compare against given version
         my $version = shift;
         croak "invalid version number: $version\n"
-            if $version !~ /^(\d+(\.\d+)*)$/;
+            if $version !~ $PANDOC_VERSION_SPEC;
 
         my @got = split /\./, $pandoc->{version};
         foreach my $e (split /\./, $version) {
@@ -246,23 +247,22 @@ returns the the exit code of pandoc executable or C<-1> if execution failed.
 
 =item err
 
-
 These options correspond to arguments C<$stdin>, C<$stdout>, and
 C<$stderr> of L<IPC::Run3>, see there for details.
 
-=item binmode_stdin => $iomode
+=item binmode_stdin
 
-=item binmode_stdout => $iomode
+=item binmode_stdout
 
-=item binmode_stderr => $iomode
+=item binmode_stderr
 
 These options correspond to the like-named options to L<IPC::Run3>, see
 there for details.
 
-=item binmode => $iomode
+=item binmode
 
 If defined any binmode_stdin/binmode_stdout/binmode_stderr option which
-is undefined will be set to C<$iomode>.
+is undefined will be set to this value.
 
 =back
 
@@ -314,9 +314,15 @@ Use L<Pandoc::Elements> for more elaborate document processing based on Pandoc.
 Other Pandoc related but outdated modules at CPAN include
 L<Orze::Sources::Pandoc> and L<App::PDoc>.
 
-=head1 COPYRIGHT AND LICENSE
+=head1 AUTHOR
 
-Copyright 2016- Jakob Voß
+Jakob Voss, C<< nichtich at cpan.org >>
+
+=head1 CONTRIBUTORS
+
+Benct Philip Jonsson C<< bpjonsson at gmail.com >>
+
+=head1 COPYRIGHT AND LICENSE
 
 GNU General Public License, Version 2
 

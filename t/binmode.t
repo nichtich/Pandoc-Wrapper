@@ -7,8 +7,8 @@ use utf8; # essential!
 sub capture_stderr(&;@);
 
 plan skip_all => 'pandoc executable required' unless pandoc;
-plan skip_all => 'Capture::Tiny required' unless eval 'use Capture::Tiny qw[ capture_stderr ]; 1;';
-
+plan skip_all => 'Capture::Tiny required'
+    unless eval 'use Capture::Tiny qw(capture_stderr); 1;';
 
 my $input = <<'DUMMY_TEXT';
 ## Ëïüs Üt

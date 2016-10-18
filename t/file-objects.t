@@ -3,10 +3,11 @@ use Test::More;
 use Test::Exception;
 use Pandoc;
 
-use subs qw[ path tempdir ];
+use subs qw(path tempdir);
 
 plan skip_all => 'pandoc executable required' unless pandoc;
-plan skip_all => 'Path::Tiny required' unless eval 'use Path::Tiny qw[ path tempdir ]; 1;';
+plan skip_all => 'Path::Tiny required'
+    unless eval 'use Path::Tiny qw(path tempdir); 1;';
 
 my $dir = tempdir( CLEANUP => 1 );
 
