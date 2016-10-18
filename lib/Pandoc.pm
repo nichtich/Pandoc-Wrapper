@@ -11,7 +11,7 @@ Pandoc - interface to the Pandoc document converter
 
 =cut
 
-our $VERSION = '0.1.0';
+our $VERSION = '0.2.0';
 
 use Carp 'croak';
 use IPC::Run3;
@@ -302,7 +302,7 @@ C<:encoding(UTF-8)> if the corresponding scalar is marked as UTF-8 and
 the respective option is undefined. Since all pandoc executable
 input/output must be UTF-8 encoded this is convenient if you run with
 L<use utf8|utf8>, as you then don't need to set the binmode options at
-all (nor L<encode/decode|Encode>) when passing input/output scalar
+all (L<encode nor decode|Encode>) when passing input/output scalar
 references.
 
 The C<return_if_system_error> option of L<IPC::Run3> is set to true by default;
@@ -348,13 +348,13 @@ L<Orze::Sources::Pandoc> and L<App::PDoc>.
 
 =head1 AUTHOR
 
-Jakob Voss, C<< nichtich at cpan.org >>
+Jakob Voß
 
 =head1 CONTRIBUTORS
 
-Benct Philip Jonsson C<< bpjonsson at gmail.com >>
+Benct Philip Jonsson
 
-=head1 COPYRIGHT AND LICENSE
+=head1 LICENSE
 
 GNU General Public License, Version 2
 
