@@ -1,6 +1,8 @@
 Revision history for Pandoc Perl module
 
 {{$NEXT}}
+
+0.2.0  2016-10-18 21:58:19 CEST
     - add alternative calling conventions for pandoc/run
     - add utility method convert
 
