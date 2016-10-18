@@ -84,7 +84,7 @@ sub run {
     my $in  = $opts{in};
     my $out = $opts{out};
     my $err = $opts{err};
-    $opts{return_if_system_error} = 1;
+    $opts{return_if_system_error} //= 1;
 
     for my $io ( qw[ in out err ] ) {
         $opts{"binmode_std$io"} //= $opts{binmode} if $opts{binmode};
@@ -97,6 +97,30 @@ sub run {
     run3 ['pandoc', @args ], $in, $out, $err, \%opts;
 
     return $? == -1 ? -1 : $? >> 8;
+}
+
+sub convert {
+    my $pandoc = shift;
+    $pandoc = do { $PANDOC //= Pandoc->new } if $pandoc eq 'Pandoc'; 
+    return unless $pandoc;
+
+    my $from  = shift;
+    my $to    = shift;
+    my $in    = shift;
+    my $out   = "";
+    my $err   = "";
+
+    my $utf8 = utf8::is_utf8($in);
+
+    my $status = $pandoc->run( [ '-f' => $from, '-t' => $to, @_ ], 
+        in => \$in, out => \$out, err => \$err );
+    
+    croak($err || "pandoc failed with exit code $status") if $status;
+
+    utf8::decode($out) if $utf8;
+
+    chomp $out;
+    return $out;
 }
 
 sub require {
@@ -168,6 +192,9 @@ __END__
   pandoc->run('input.md', -o => 'output.html');
   pandoc [ -f => 'html', -t => 'markdown' ], in => \$html, out => \$md;
   pandoc [ -f => 'html', -t => 'markdown' ], { in => \$html, out => \$md };
+
+  # utility method to convert from string
+  $latex = pandoc->convert( 'markdown' => 'latex', '*hello*' );
 
   # check executable
   pandoc or die "pandoc executable not found";
@@ -278,9 +305,8 @@ L<use utf8|utf8>, as you then don't need to set the binmode options at
 all (nor L<encode/decode|Encode>) when passing input/output scalar
 references.
 
-The C<return_if_system_error> option of L<IPC::Run3> is set to true
-automatically; the C<pandoc> function returns the exit code from the
-pandoc executable.
+The C<return_if_system_error> option of L<IPC::Run3> is set to true by default;
+the C<pandoc> function returns the exit code from the pandoc executable.
 
 =head1 METHODS
 
@@ -298,6 +324,12 @@ the system environment has changed during runtime.
 =head2 run( [ \@arguments, \%options ] )
 
 Execute the pandoc executable (see function C<pandoc> above).
+
+=head2 convert( $from => $to, $input [, @arguments ] )
+
+Convert a string in format C<$from> to format C<$to>. Additional pandoc options
+such as C<--smart> and C<--standalone> can be passed. The result is returned 
+in same utf8 mode (C<utf8::is_unicode>) as the input.
 
 =head2 version( [ $version ] )
 
