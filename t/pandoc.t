@@ -7,11 +7,10 @@ plan skip_all => 'pandoc executable required' unless pandoc;
 
 # version
 {
-    like( pandoc->version, qr/^\d+(.\d+)+$/, 'pandoc->version' );
-    like( Pandoc->version, qr/^\d+(.\d+)+$/, 'Pandoc->version' );
-
     my $version = pandoc->version;
+    like( $version, qr/^\d+(.\d+)+$/, 'pandoc->version' );
     isa_ok $version, 'version', 'pandoc->version is a version object';
+
     ok pandoc->version >= $version, 'compare same versions';
     is pandoc->version($version), $version, 'expect same version';
 
@@ -31,7 +30,6 @@ is $html, "<p><em>.</em></p>\n", 'markdown => html';
 
 if (-d $ENV{HOME}.'/.pandoc') {
     ok( pandoc->data_dir, 'pandoc->data_dir' );
-    ok( Pandoc->data_dir, 'Pandoc->data_dir' );
 }
 
 ## no critic
@@ -40,17 +38,14 @@ is $md, "*.*\n", 'html => markdown';
 
 is_deeply new Pandoc, pandoc(), 'Pandoc->new';
 
-lives_ok { pandoc->require('0.1.0.1') } 'pandoc->require';
-
-lives_ok { Pandoc->require('0.1.0.1') } 'Pandoc->require';
-
-throws_ok { pandoc->require('a') }
-    qr{ at t/pandoc.t}m,
-    'require: throws';
-
-throws_ok { pandoc->require('12345.67') }
-    qr/^pandoc 12345\.67 required, only found \d+(\.\d)+/,
-    'require: throws';
+# require
+{
+    lives_ok { pandoc->require('0.1.0.1') } 'pandoc->require';
+    throws_ok { pandoc->require('x') } qr{ at t/pandoc.t}m, 'require throws)';
+    throws_ok { pandoc->require('12345.67') }
+        qr/^pandoc 12345\.67 required, only found \d+(\.\d)+/,
+        'require throws';
+}
 
 throws_ok { Pandoc->import('999.9.9') }
     qr/^pandoc 999\.9\.9 required, only found \d+(\.\d)+/,

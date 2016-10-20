@@ -31,16 +31,17 @@ sub import {
 }
 
 sub new {
-    my $out;
-    my $in;
+    my ($in, $out);
 
-    run3 ['pandoc','-v'], \$in, \$out, \undef,
+    my $pandoc = bless { bin => 'pandoc' }, 'Pandoc';
+    
+    run3 [ 'pandoc','-v'], \$in, \$out, \undef,
         { return_if_system_error => 1 };
 
     croak "pandoc executable not found\n" unless
         $out and $out =~ /^pandoc (\d+(\.\d+)+)/;
 
-    my $pandoc = bless { version => version->parse($1) }, 'Pandoc';
+    $pandoc->{version} = version->parse($1);
     $pandoc->{data_dir} = $1 if $out =~ /^Default user data directory: (.+)$/m;
 
     return $pandoc;
@@ -86,7 +87,7 @@ sub run {
     my $err = $opts{err};
     $opts{return_if_system_error} //= 1;
 
-    for my $io ( qw[ in out err ] ) {
+    for my $io ( qw(in out err) ) {
         $opts{"binmode_std$io"} //= $opts{binmode} if $opts{binmode};
         if ( 'SCALAR' eq ref $opts{$io} ) {
             next unless utf8::is_utf8(${$opts{$io}});
@@ -94,21 +95,18 @@ sub run {
         }
     }
 
-    run3 ['pandoc', @args ], $in, $out, $err, \%opts;
+    run3 [ $pandoc->{bin}, @args ], $in, $out, $err, \%opts;
 
     return $? == -1 ? -1 : $? >> 8;
 }
 
 sub convert {
     my $pandoc = shift;
-    $pandoc = do { $PANDOC //= Pandoc->new } if $pandoc eq 'Pandoc';
-    return unless $pandoc;
-
-    my $from  = shift;
-    my $to    = shift;
-    my $in    = shift;
-    my $out   = "";
-    my $err   = "";
+    my $from   = shift;
+    my $to     = shift;
+    my $in     = shift;
+    my $out    = "";
+    my $err    = "";
 
     my $utf8 = utf8::is_utf8($in);
 
@@ -124,27 +122,19 @@ sub convert {
 }
 
 sub require {
-    my $pandoc = @_ < 2
-        ? $PANDOC //= Pandoc->new   # may throw
-        : do { ref $_[0] ? shift : shift->new };
-    my $version = shift;
-
+    my ($pandoc, $version) = @_;
     croak "pandoc $version required, only found ".$pandoc->{version}."\n"
         unless $pandoc->version($version);
 }
 
 sub version {
     my $pandoc = shift;
-    $pandoc = do { $PANDOC //= Pandoc->new } if $pandoc eq 'Pandoc';
     return unless $pandoc and $pandoc->{version};
 
     # compare against given version
     if (@_) {
-        my $version = eval { version->parse($_[0]) } or do {
-            my $e = $@;
-            $e =~ s/ at .*//;
-            croak $e;
-        };
+        my $version = eval { version->parse($_[0]) } or
+            croak "Invalid version format: $_[0]";
         return if $version > $pandoc->{version};
     }
 
@@ -152,11 +142,7 @@ sub version {
 }
 
 sub data_dir {
-    my $pandoc = shift;
-    $pandoc = do { $PANDOC //= Pandoc->new } if $pandoc eq 'Pandoc';
-    return unless $pandoc;
-
-    $pandoc->{data_dir};
+    $_[0]->{data_dir};
 }
 
 1;
