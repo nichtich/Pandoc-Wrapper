@@ -11,7 +11,7 @@ Pandoc - interface to the Pandoc document converter
 
 =cut
 
-use version 0.77; our $VERSION = version->declare('0.2.1');
+use version 0.77; our $VERSION = version->declare('0.2.2');
 
 use Carp 'croak';
 use IPC::Run3;
@@ -31,16 +31,14 @@ sub import {
 }
 
 sub new {
-    my ($class, %opts) = @_;
+    my $pandoc = bless { }, shift;
+    $pandoc->{bin} = (@_ and $_[0] =~ /^[^-]+/) ? shift : 'pandoc';
+    $pandoc->{arguments} = \@_;
+
     my ($in, $out);
 
-    my $pandoc = bless { 
-        bin => $opts{bin} // 'pandoc'
-    }, $class;
-    
     run3 [ $pandoc->{bin},'-v'], \$in, \$out, \undef,
         { return_if_system_error => 1 };
-
     croak "pandoc executable not found\n" unless
         $out and $out =~ /^pandoc (\d+(\.\d+)+)/;
 
@@ -98,7 +96,7 @@ sub run {
         }
     }
 
-    run3 [ $pandoc->{bin}, @args ], $in, $out, $err, \%opts;
+    run3 [ $pandoc->{bin}, @{$pandoc->{arguments}}, @args ], $in, $out, $err, \%opts;
 
     return $? == -1 ? -1 : $? >> 8;
 }
@@ -148,6 +146,14 @@ sub version {
 
 sub data_dir {
     $_[0]->{data_dir};
+}
+
+sub bin {
+    $_[0]->{bin};
+}
+
+sub arguments {
+    @{$_[0]->{arguments}};
 }
 
 sub _help { # not documented. may change to return structured data
@@ -219,8 +225,12 @@ __END__
   pandoc->version(1.12) or die "pandoc >= 1.12 required";
 
   # access properties
-  say "pandoc ".pandoc->version;
+  say pandoc->bin." ".pandoc->version;
   say "Default user data directory: ".pandoc->data_dir;
+
+  # create an instance with default options
+  my $md2latex = Pandoc->new(qw(-f markdown -t latex --smart));
+  $md2latex->run({ in => \$markdown, out => \$latex });
 
 =head1 DESCRIPTION
 
@@ -292,20 +302,15 @@ references.
 
 =head1 METHODS
 
-=head2 new( [ %options ] )
+=head2 new( [ [ $executable ] [, @arguments ] )
 
 Create a new instance of class Pandoc or throw an exception if no pandoc
-executable was found. Repeated use of this constructor is not recommended
-because C<pandoc --version> is called onec for every instance. Possible options
-include:
+executable was found. The first argument, if given and not starting with C<->,
+can be used to set the pandoc executable (C<pandoc> by default). Additional
+arguments are passed to the executable on each run.
 
-=head3 Options
-
-=over
-
-=item bin
-
-pandoc executable (C<pandoc> by default)
+Repeated use of this constructor with same arguments is not recommended because
+C<pandoc --version> is called for every new instance.
 
 =back
 
@@ -333,6 +338,14 @@ in same utf8 mode (C<utf8::is_unicode>) as the input.
 
 Return the pandoc version as L<version> object. Returns undef if the version is
 lower than a given minimum version.
+
+=head2 bin
+
+Return the pandoc executable.
+
+=head2 arguments
+
+Return a list of default arguments.
 
 =head2 data_dir
 

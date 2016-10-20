@@ -29,6 +29,10 @@ plan skip_all => 'pandoc executable required' unless pandoc;
     my $pandoc = Pandoc->new; 
     is_deeply $pandoc, pandoc(), 'Pandoc->new';
     ok $pandoc != pandoc, 'Pandoc->new creates new instance';
+    is $pandoc->bin, 'pandoc', 'default executable';
+
+    throws_ok { Pandoc->new('/dev/null/notexist') }
+        qr{pandoc executable not found};
 }
 
 # version
@@ -48,6 +52,19 @@ plan skip_all => 'pandoc executable required' unless pandoc;
     ok !pandoc->version($version), 'expect higher version';
 
     throws_ok { pandoc->version('abc') } qr{at t/methods\.t}m, 'invalid version';
+}
+
+# arguments
+{
+    my $pandoc = Pandoc->new(qw(--smart -t html));
+    is_deeply [$pandoc->arguments], [qw(--smart -t html)], 'arguments';
+
+    my ($in, $out) = ('*...*');
+    is $pandoc->run([], in => \$in, out => \$out), 0, 'run';
+    is $out, "<p><em>…</em></p>\n", 'use default arguments';
+
+    is $pandoc->run( '-t' => 'latex', { in => \$in, out => \$out }), 0, 'run';
+    is $out, "\\emph{\\ldots{}}\n", 'override default arguments';
 }
 
 # data_dir
