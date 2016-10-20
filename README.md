@@ -12,7 +12,7 @@ Pandoc - interface to the Pandoc document converter
 
     use Pandoc;             # check at first use
     use Pandoc 1.12;        # check at compile time
-    pandoc->require(1.12);  # check at run time
+    Pandoc->require(1.12);  # check at run time
 
     # execute pandoc
     pandoc 'input.md', -o => 'output.html';
@@ -46,62 +46,35 @@ function `pandoc` but it can also be used as class.
 
 ## pandoc \[ @arguments \[, \\%options \] \]
 
-## pandoc \[ \\@arguments \[, %options \] \]
-
-## pandoc \[ \\@arguments \[, \\%options \] \]
-
-Runs the pandoc executable with given command line arguments and options
-and input/output/error redirected, as specified with the in/out/err
-[options](#options).
-
-Either of `@arguments` and `%options`, or both, may be passed as an
-array or hash reference respectively. The items of the argument list to
-`pandoc()` is interpreted according to these rules:
-
-- If the first item is an array ref and the last is a hash ref
-
-    these are `\@arguments` and `\%options` respectively and no other
-    items are allowed.
-
-- If the first item is an array ref and the last is _not_ a hash ref
-
-    the first item is `\@arguments` and the remaining items if any
-    (of which there must be an even number) are `%options`.
-
-    This is useful in the common case where the command line arguments are
-    the same over multiple calls, while the in/out/err [options](#options)
-    are different for each call.
-
-- If the first item is _not_ an array ref and the last is a hash ref
-
-    the last item is `\%options` and the preceding items if any are
-    `@arguments`.
-
-- If _neither_ the first item is an array ref _nor_ the last is a hash ref
-
-    All the items (if any) are `@arguments`.
-
-Note that `\@arguments` must be the first item and `\%options` must be
-the last, but either may be an empty array/hash reference.
+## pandoc \[ \\@arguments \[, %options | \\%options \] \]
 
 If called without arguments and options, the function returns a singleton
-instance of class Pandoc to access information about the executable version of
-pandoc, or `undef` if no pandoc executable was found.  If called with
-arguments and/or options, the function returns `0` on success.  Otherwise it
-returns the the exit code of pandoc executable or `-1` if execution failed.
+instance of class Pandoc to execute [methods](#methods), or `undef` if no
+pandoc executable was found. Otherwise runs the pandoc executable with given
+command line arguments. Additional options control input, output, and error
+stream as described below.
+
+Arguments and options can be passed as plain array/hash or as (possibly empty)
+reference but one of them must be a reference if both are provided or if one of
+both is empty.
+
+    pandoc @arguments, { ... };    # ok
+    pandoc [ ... ], %options;      # ok
+
+    pandoc @arguments, %options;   # not ok!
+
+If called with arguments and/or options, the function returns `0` on success.
+Otherwise it returns the the exit code of pandoc executable or `-1` if
+execution failed.
 
 ### Options
 
-- in
-- out
-- err
+- in / out / err
 
     These options correspond to arguments `$stdin`, `$stdout`, and
     `$stderr` of [IPC::Run3](https://metacpan.org/pod/IPC::Run3), see there for details.
 
-- binmode\_stdin
-- binmode\_stdout
-- binmode\_stderr
+- binmode\_stdin / binmode\_stdout / binmode\_stderr
 
     These options correspond to the like-named options to [IPC::Run3](https://metacpan.org/pod/IPC::Run3), see
     there for details.
@@ -110,6 +83,10 @@ returns the the exit code of pandoc executable or `-1` if execution failed.
 
     If defined any binmode\_stdin/binmode\_stdout/binmode\_stderr option which
     is undefined will be set to this value.
+
+- return\_if\_system\_error
+
+    Set to true by default to return the exit code of pandoc executable. 
 
 For convenience the `pandoc` function (_after_ checking the `binmode`
 option) checks the contents of any scalar references passed to the
@@ -123,40 +100,56 @@ input/output must be UTF-8 encoded this is convenient if you run with
 all ([encode nor decode](https://metacpan.org/pod/Encode)) when passing input/output scalar
 references.
 
-The `return_if_system_error` option of [IPC::Run3](https://metacpan.org/pod/IPC::Run3) is set to true by default;
-the `pandoc` function returns the exit code from the pandoc executable.
-
 # METHODS
 
-## new
+## new( \[ %options \] )
 
 Create a new instance of class Pandoc or throw an exception if no pandoc
 executable was found. Repeated use of this constructor is not recommended
-unless you explicitly want to call `pandoc --version`, for instance because
-the system environment has changed during runtime.
+because `pandoc --version` is called onec for every instance. Possible options
+include:
+
+### Options
+
+- bin
+
+    pandoc executable (`pandoc` by default)
 
 ## run( \[ @arguments, \\%options \] )
 
-## run( \[ \\@arguments, %options \] )
-
-## run( \[ \\@arguments, \\%options \] )
+## run( \[ \\@arguments \[ %options | \\%options \] \] )
 
 Execute the pandoc executable (see function `pandoc` above).
+
+## require( $minimum\_version )
+
+Return the Pandoc instance if its version number is at least as high as the
+given minimum version. Throw an error otherwise.  This method can also be
+called as constructor: `Pandoc->require(...)` is equivalent to `pandoc->require` but throws a more meaningful error message if no pandoc
+executable was found.
 
 ## convert( $from => $to, $input \[, @arguments \] )
 
 Convert a string in format `$from` to format `$to`. Additional pandoc options
-such as `--smart` and `--standalone` can be passed. The result is returned 
+such as `--smart` and `--standalone` can be passed. The result is returned
 in same utf8 mode (`utf8::is_unicode`) as the input.
 
-## version( \[ $version \] )
+## version( \[ $minimum\_version \] )
 
-Return the pandoc version if it is at least as new as a given version or if no
-argument was provided.
+Return the pandoc version as [version](https://metacpan.org/pod/version) object. Returns undef if the version is
+lower than a given minimum version.
 
-## require( $version )
+## data\_dir
 
-Throw an error if the pandoc version is lower than a given version.
+Return the default data directory (only available since Pandoc 1.11).
+
+## input\_formats
+
+Return a list of supported input formats.
+
+## output\_formats
+
+Return a list of supported output formats.
 
 # SEE ALSO
 
