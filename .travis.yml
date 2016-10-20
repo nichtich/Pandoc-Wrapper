@@ -18,6 +18,10 @@ install:
   - cpanm --installdeps .
   - cpanm --quiet --notest --skip-satisfied Dist::Milla
 
+before_script:
+  - mkdir -p ~/.pandoc/filters
+  - pandoc --version
+
 script:
   - milla smoke --release --author
 
