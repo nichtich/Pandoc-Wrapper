@@ -33,8 +33,12 @@ Pandoc - interface to the Pandoc document converter
     pandoc->version(1.12) or die "pandoc >= 1.12 required";
 
     # access properties
-    say "pandoc ".pandoc->version;
+    say pandoc->bin." ".pandoc->version;
     say "Default user data directory: ".pandoc->data_dir;
+
+    # create an instance with default options
+    my $md2latex = Pandoc->new(qw(-f markdown -t latex --smart));
+    $md2latex->run({ in => \$markdown, out => \$latex });
 
 # DESCRIPTION
 
@@ -102,18 +106,15 @@ references.
 
 # METHODS
 
-## new( \[ %options \] )
+## new( \[ \[ $executable \] \[, @arguments \] )
 
 Create a new instance of class Pandoc or throw an exception if no pandoc
-executable was found. Repeated use of this constructor is not recommended
-because `pandoc --version` is called onec for every instance. Possible options
-include:
+executable was found. The first argument, if given and not starting with `-`,
+can be used to set the pandoc executable (`pandoc` by default). Additional
+arguments are passed to the executable on each run.
 
-### Options
-
-- bin
-
-    pandoc executable (`pandoc` by default)
+Repeated use of this constructor with same arguments is not recommended because
+`pandoc --version` is called for every new instance.
 
 ## run( \[ @arguments, \\%options \] )
 
@@ -138,6 +139,14 @@ in same utf8 mode (`utf8::is_unicode`) as the input.
 
 Return the pandoc version as [version](https://metacpan.org/pod/version) object. Returns undef if the version is
 lower than a given minimum version.
+
+## bin
+
+Return the pandoc executable.
+
+## arguments
+
+Return a list of default arguments.
 
 ## data\_dir
 
@@ -168,3 +177,11 @@ Benct Philip Jonsson
 # LICENSE
 
 GNU General Public License, Version 2
+
+# POD ERRORS
+
+Hey! **The above document had some coding errors, which are explained below:**
+
+- Around line 131:
+
+    &#x3d;back without =over

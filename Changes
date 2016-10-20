@@ -1,6 +1,7 @@
 Revision history for Pandoc Perl module
 
 {{$NEXT}}
+    - support default arguments
 
 0.2.1  2016-10-20 10:34:31 CEST
     - add method input_format and output_format

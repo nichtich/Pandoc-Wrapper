@@ -312,8 +312,6 @@ arguments are passed to the executable on each run.
 Repeated use of this constructor with same arguments is not recommended because
 C<pandoc --version> is called for every new instance.
 
-=back
-
 =head2 run( [ @arguments, \%options ] )
 
 =head2 run( [ \@arguments [ %options | \%options ] ] )
