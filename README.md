@@ -177,11 +177,3 @@ Benct Philip Jonsson
 # LICENSE
 
 GNU General Public License, Version 2
-
-# POD ERRORS
-
-Hey! **The above document had some coding errors, which are explained below:**
-
-- Around line 131:
-
-    &#x3d;back without =over
