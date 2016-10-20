@@ -31,11 +31,14 @@ sub import {
 }
 
 sub new {
+    my ($class, %opts) = @_;
     my ($in, $out);
 
-    my $pandoc = bless { bin => 'pandoc' }, 'Pandoc';
+    my $pandoc = bless { 
+        bin => $opts{bin} // 'pandoc'
+    }, $class;
     
-    run3 [ 'pandoc','-v'], \$in, \$out, \undef,
+    run3 [ $pandoc->{bin},'-v'], \$in, \$out, \undef,
         { return_if_system_error => 1 };
 
     croak "pandoc executable not found\n" unless
@@ -123,8 +126,10 @@ sub convert {
 
 sub require {
     my ($pandoc, $version) = @_;
+    $pandoc = do { $PANDOC //= Pandoc->new } if $pandoc eq 'Pandoc'; 
     croak "pandoc $version required, only found ".$pandoc->{version}."\n"
         unless $pandoc->version($version);
+    return $pandoc;
 }
 
 sub version {
@@ -165,7 +170,7 @@ __END__
 
   use Pandoc;             # check at first use
   use Pandoc 1.12;        # check at compile time
-  pandoc->require(1.12);  # check at run time
+  Pandoc->require(1.12);  # check at run time
 
   # execute pandoc
   pandoc 'input.md', -o => 'output.html';
@@ -199,72 +204,37 @@ function C<pandoc> but it can also be used as class.
 
 =head2 pandoc [ @arguments [, \%options ] ]
 
-=head2 pandoc [ \@arguments [, %options ] ]
-
-=head2 pandoc [ \@arguments [, \%options ] ]
-
-Runs the pandoc executable with given command line arguments and options
-and input/output/error redirected, as specified with the in/out/err
-L<options|/"Options">.
-
-Either of C<@arguments> and C<%options>, or both, may be passed as an
-array or hash reference respectively. The items of the argument list to
-C<pandoc()> is interpreted according to these rules:
-
-=over
-
-=item If the first item is an array ref and the last is a hash ref
-
-these are C<\@arguments> and C<\%options> respectively and no other
-items are allowed.
-
-=item If the first item is an array ref and the last is I<not> a hash ref
-
-the first item is C<\@arguments> and the remaining items if any
-(of which there must be an even number) are C<%options>.
-
-This is useful in the common case where the command line arguments are
-the same over multiple calls, while the in/out/err L<options|/"Options">
-are different for each call.
-
-=item If the first item is I<not> an array ref and the last is a hash ref
-
-the last item is C<\%options> and the preceding items if any are
-C<@arguments>.
-
-=item If I<neither> the first item is an array ref I<nor> the last is a hash ref
-
-All the items (if any) are C<@arguments>.
-
-=back
-
-Note that C<\@arguments> must be the first item and C<\%options> must be
-the last, but either may be an empty array/hash reference.
+=head2 pandoc [ \@arguments [, %options | \%options ] ]
 
 If called without arguments and options, the function returns a singleton
-instance of class Pandoc to access information about the executable version of
-pandoc, or C<undef> if no pandoc executable was found.  If called with
-arguments and/or options, the function returns C<0> on success.  Otherwise it
-returns the the exit code of pandoc executable or C<-1> if execution failed.
+instance of class Pandoc to execute L<methods|/METHODS>, or C<undef> if no
+pandoc executable was found. Otherwise runs the pandoc executable with given
+command line arguments. Additional options control input, output, and error
+stream as described below.
+
+Arguments and options can be passed as plain array/hash or as (possibly empty)
+reference but one of them must be a reference if both are provided or if one of
+both is empty.
+
+  pandoc @arguments, { ... };    # ok
+  pandoc [ ... ], %options;      # ok
+
+  pandoc @arguments, %options;   # not ok!
+
+If called with arguments and/or options, the function returns C<0> on success.
+Otherwise it returns the the exit code of pandoc executable or C<-1> if
+execution failed.
 
 =head3 Options
 
 =over
 
-=item in
-
-=item out
-
-=item err
+=item in / out / err
 
 These options correspond to arguments C<$stdin>, C<$stdout>, and
 C<$stderr> of L<IPC::Run3>, see there for details.
 
-=item binmode_stdin
-
-=item binmode_stdout
-
-=item binmode_stderr
+=item binmode_stdin / binmode_stdout / binmode_stderr
 
 These options correspond to the like-named options to L<IPC::Run3>, see
 there for details.
@@ -273,6 +243,10 @@ there for details.
 
 If defined any binmode_stdin/binmode_stdout/binmode_stderr option which
 is undefined will be set to this value.
+
+=item return_if_system_error
+
+Set to true by default to return the exit code of pandoc executable. 
 
 =back
 
@@ -288,25 +262,38 @@ L<use utf8|utf8>, as you then don't need to set the binmode options at
 all (L<encode nor decode|Encode>) when passing input/output scalar
 references.
 
-The C<return_if_system_error> option of L<IPC::Run3> is set to true by default;
-the C<pandoc> function returns the exit code from the pandoc executable.
-
 =head1 METHODS
 
-=head2 new
+=head2 new( [ %options ] )
 
 Create a new instance of class Pandoc or throw an exception if no pandoc
 executable was found. Repeated use of this constructor is not recommended
-unless you explicitly want to call C<pandoc --version>, for instance because
-the system environment has changed during runtime.
+because C<pandoc --version> is called onec for every instance. Possible options
+include:
+
+=head3 Options
+
+=over
+
+=item bin
+
+pandoc executable (C<pandoc> by default)
+
+=back
 
 =head2 run( [ @arguments, \%options ] )
 
-=head2 run( [ \@arguments, %options ] )
-
-=head2 run( [ \@arguments, \%options ] )
+=head2 run( [ \@arguments [ %options | \%options ] ] )
 
 Execute the pandoc executable (see function C<pandoc> above).
+
+=head2 require( $minimum_version )
+
+Return the Pandoc instance if its version number is at least as high as the
+given minimum version. Throw an error otherwise.  This method can also be
+called as constructor: C<< Pandoc->require(...) >> is equivalent to C<<
+pandoc->require >> but throws a more meaningful error message if no pandoc
+executable was found.
 
 =head2 convert( $from => $to, $input [, @arguments ] )
 
@@ -318,10 +305,6 @@ in same utf8 mode (C<utf8::is_unicode>) as the input.
 
 Return the pandoc version as L<version> object. Returns undef if the version is
 lower than a given minimum version.
-
-=head2 require( $minimum_version )
-
-Throw an error if the pandoc version is lower than a given version.
 
 =head1 SEE ALSO
 

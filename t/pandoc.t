@@ -40,6 +40,9 @@ is_deeply new Pandoc, pandoc(), 'Pandoc->new';
 
 # require
 {
+    my $pandoc;
+    lives_ok { $pandoc = Pandoc->require('0.1.0.1') } 'Pandoc->require';
+    is_deeply $pandoc, pandoc, 'require returns singleton';
     lives_ok { pandoc->require('0.1.0.1') } 'pandoc->require';
     throws_ok { pandoc->require('x') } qr{ at t/pandoc.t}m, 'require throws)';
     throws_ok { pandoc->require('12345.67') }
