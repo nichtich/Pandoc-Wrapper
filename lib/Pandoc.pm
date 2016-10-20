@@ -11,7 +11,7 @@ Pandoc - interface to the Pandoc document converter
 
 =cut
 
-our $VERSION = '0.2.0';
+use version 0.77; our $VERSION = version->declare('0.2.0');
 
 use Carp 'croak';
 use IPC::Run3;
@@ -40,7 +40,7 @@ sub new {
     croak "pandoc executable not found\n" unless
         $out and $out =~ /^pandoc (\d+(\.\d+)+)/;
 
-    my $pandoc = bless { version => $1 }, 'Pandoc';
+    my $pandoc = bless { version => version->parse($1) }, 'Pandoc';
     $pandoc->{data_dir} = $1 if $out =~ /^Default user data directory: (.+)$/m;
 
     return $pandoc;
@@ -48,7 +48,7 @@ sub new {
 
 sub pandoc(@) { ## no critic
     $PANDOC //= eval { Pandoc->new } // 0;
-    
+
     if (@_) {
         return $PANDOC ? $PANDOC->run(@_) : -1;
     } else {
@@ -60,7 +60,7 @@ sub run {
     my $pandoc = shift;
 
     # We shift/pop these args but want to remember what reftype they were
-    my %is_ref = ( args => ('ARRAY' eq ref $_[0] ), 
+    my %is_ref = ( args => ('ARRAY' eq ref $_[0] ),
                    opts => ('HASH' eq ref $_[-1]) );
     my @args   = $is_ref{args} ? @{ shift @_ } : ();
     my %opts   = $is_ref{opts} ? %{pop @_} : ();
@@ -101,7 +101,7 @@ sub run {
 
 sub convert {
     my $pandoc = shift;
-    $pandoc = do { $PANDOC //= Pandoc->new } if $pandoc eq 'Pandoc'; 
+    $pandoc = do { $PANDOC //= Pandoc->new } if $pandoc eq 'Pandoc';
     return unless $pandoc;
 
     my $from  = shift;
@@ -112,9 +112,9 @@ sub convert {
 
     my $utf8 = utf8::is_utf8($in);
 
-    my $status = $pandoc->run( [ '-f' => $from, '-t' => $to, @_ ], 
+    my $status = $pandoc->run( [ '-f' => $from, '-t' => $to, @_ ],
         in => \$in, out => \$out, err => \$err );
-    
+
     croak($err || "pandoc failed with exit code $status") if $status;
 
     utf8::decode($out) if $utf8;
@@ -124,7 +124,7 @@ sub convert {
 }
 
 sub require {
-    my $pandoc = @_ < 2 
+    my $pandoc = @_ < 2
         ? $PANDOC //= Pandoc->new   # may throw
         : do { ref $_[0] ? shift : shift->new };
     my $version = shift;
@@ -135,20 +135,17 @@ sub require {
 
 sub version {
     my $pandoc = shift;
-    $pandoc = do { $PANDOC //= Pandoc->new } if $pandoc eq 'Pandoc'; 
+    $pandoc = do { $PANDOC //= Pandoc->new } if $pandoc eq 'Pandoc';
     return unless $pandoc and $pandoc->{version};
 
-    if (@_) { # compare against given version
-        my $version = shift;
-        croak "invalid version number: $version\n"
-            if $version !~ $PANDOC_VERSION_SPEC;
-
-        my @got = split /\./, $pandoc->{version};
-        foreach my $e (split /\./, $version) {
-            my $g = shift @got // 0;
-            return if $e > $g;
-            last   if $e < $g;
-        }
+    # compare against given version
+    if (@_) {
+        my $version = eval { version->parse($_[0]) } or do {
+            my $e = $@;
+            $e =~ s/ at .*//;
+            croak $e;
+        };
+        return if $version > $pandoc->{version};
     }
 
     return $pandoc->{version};
@@ -156,7 +153,7 @@ sub version {
 
 sub data_dir {
     my $pandoc = shift;
-    $pandoc = do { $PANDOC //= Pandoc->new } if $pandoc eq 'Pandoc'; 
+    $pandoc = do { $PANDOC //= Pandoc->new } if $pandoc eq 'Pandoc';
     return unless $pandoc;
 
     $pandoc->{data_dir};
@@ -328,15 +325,15 @@ Execute the pandoc executable (see function C<pandoc> above).
 =head2 convert( $from => $to, $input [, @arguments ] )
 
 Convert a string in format C<$from> to format C<$to>. Additional pandoc options
-such as C<--smart> and C<--standalone> can be passed. The result is returned 
+such as C<--smart> and C<--standalone> can be passed. The result is returned
 in same utf8 mode (C<utf8::is_unicode>) as the input.
 
-=head2 version( [ $version ] )
+=head2 version( [ $minimum_version ] )
 
-Return the pandoc version if it is at least as new as a given version or if no
-argument was provided.
+Return the pandoc version as L<version> object. Returns undef if the version is
+lower than a given minimum version.
 
-=head2 require( $version )
+=head2 require( $minimum_version )
 
 Throw an error if the pandoc version is lower than a given version.
 
