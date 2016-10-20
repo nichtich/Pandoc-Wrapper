@@ -28,7 +28,7 @@ my ($html, $md);
 is pandoc({ in => \'*.*', out => \$html }), 0, 'pandoc({in =>..., out=>...}';
 is $html, "<p><em>.</em></p>\n", 'markdown => html';
 
-if (-d $ENV{HOME}.'/.pandoc') {
+if (-d $ENV{HOME}.'/.pandoc' and pandoc->version('1.11')) {
     ok( pandoc->data_dir, 'pandoc->data_dir' );
 }
 

@@ -306,6 +306,10 @@ in same utf8 mode (C<utf8::is_unicode>) as the input.
 Return the pandoc version as L<version> object. Returns undef if the version is
 lower than a given minimum version.
 
+=head2 data_dir
+
+Return the default data directory (only available since Pandoc 1.11).
+
 =head1 SEE ALSO
 
 Use L<Pandoc::Elements> for more elaborate document processing based on Pandoc.
