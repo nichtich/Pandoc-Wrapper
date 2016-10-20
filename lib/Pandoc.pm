@@ -150,6 +150,34 @@ sub data_dir {
     $_[0]->{data_dir};
 }
 
+sub _help { # not documented. may change to return structured data
+    my ($pandoc) = @_;
+
+	unless (defined $pandoc->{help}) {
+		my $help;
+    	$pandoc->run('--help', { out => \$help });
+		for my $inout (qw(Input Output)) {
+			$help =~ /^$inout formats:\s+([a-z_0-9,\+\s*]+)/m;
+			$pandoc->{lc($inout).'_formats'} = [ split /,\s+|\s+/, $1 ]
+		}
+	    $pandoc->{help} = $help;
+    }
+
+	$pandoc->{help} 
+}
+
+sub input_formats {
+    my ($pandoc) = @_;
+	$pandoc->_help;
+    @{$pandoc->{input_formats}};
+}
+
+sub output_formats {
+    my ($pandoc) = @_;
+	$pandoc->_help;
+    @{$pandoc->{output_formats}};
+}
+
 1;
 
 __END__
@@ -309,6 +337,14 @@ lower than a given minimum version.
 =head2 data_dir
 
 Return the default data directory (only available since Pandoc 1.11).
+
+=head2 input_formats
+
+Return a list of supported input formats.
+
+=head2 output_formats
+
+Return a list of supported output formats.
 
 =head1 SEE ALSO
 

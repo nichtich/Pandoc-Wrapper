@@ -8,6 +8,16 @@ plan skip_all => 'pandoc executable required' unless pandoc;
 
 my $args = ['-t' => 'markdown'];
 
+subtest 'pandoc( ... )' => sub {
+    my ($html, $md);
+    is pandoc({ in => \'*.*', out => \$html }), 0, 'pandoc({in =>..., out=>...}';
+    is $html, "<p><em>.</em></p>\n", 'markdown => html';
+
+    ## no critic
+    pandoc -f => 'html', -t => 'markdown', { in => \$html, out => \$md };
+    is $md, "*.*\n", 'html => markdown';
+};
+
 subtest 'run(@args, \%opts)' => sub {
     my $in = 'foo';
     my %opts = ( in => \$in, out => \my($out), err => \my($err) );
