@@ -1,6 +1,8 @@
 Revision history for Pandoc Perl module
 
 {{$NEXT}}
+    - add method input_format and output_format
+    - let version return a version object
 
 0.2.0  2016-10-18 21:58:19 CEST
     - add alternative calling conventions for pandoc/run
