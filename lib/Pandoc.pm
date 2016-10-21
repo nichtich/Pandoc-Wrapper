@@ -23,12 +23,15 @@ our $PANDOC;
 our $PANDOC_VERSION_SPEC = qr/^(\d+(\.\d+)*)$/;
 
 sub import {
-    my ($version) = grep { $_ =~ $PANDOC_VERSION_SPEC } @_;
-    if ($version) {
-        $PANDOC = Pandoc->new;
-        $PANDOC->require($version);
+    shift;
+
+    if (@_ and $_[0] =~ /^\d+/) {
+        $PANDOC //= Pandoc->new;
+        $PANDOC->require(shift);
     }
-    Pandoc->export_to_level(1, grep { $_ !~ $PANDOC_VERSION_SPEC } @_ );
+    $PANDOC //= Pandoc->new(@_) if @_;
+
+    Pandoc->export_to_level(1, 'pandoc');
 }
 
 sub new {
@@ -248,9 +251,14 @@ __END__
   say pandoc->bin." ".pandoc->version;
   say "Default user data directory: ".pandoc->data_dir;
 
-  # create an instance with default options
+  # create an instance with default arguments
   my $md2latex = Pandoc->new(qw(-f markdown -t latex --smart));
   $md2latex->run({ in => \$markdown, out => \$latex });
+
+  # set default arguments on compile time
+  use Pandoc qw(-t latex);
+  use Pandoc qw(/ur/bin/pandoc --smart);
+  use Pandoc qw(1.16 --smart);
 
 =head1 DESCRIPTION
 
