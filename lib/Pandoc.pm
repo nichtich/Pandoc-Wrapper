@@ -38,7 +38,6 @@ sub new {
     my $which = (@_ and $_[0] !~ /^-./) ? shift : 'pandoc';
     say STDERR $which;
     $pandoc->{bin} = which($which);
- 
     say STDERR "BIN: " . $pandoc->{bin};
 
     $pandoc->{arguments} = [];
@@ -47,7 +46,7 @@ sub new {
     my ($in, $out);
 
     if ($pandoc->{bin}) {
-        say run3 [ $pandoc->{bin},'-v'], \$in, \$out, \undef,
+        run3 [ $pandoc->{bin},'-v'], \$in, \$out, \undef,
             { return_if_system_error => 1 };
     }
     croak "pandoc executable not found\n" unless
