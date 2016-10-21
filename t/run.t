@@ -51,6 +51,12 @@ subtest '->run([], %opts)' => sub {
     is $err //= "", "", 'stderr';
 };
 
+subtest 'run(%opts)' => sub {
+    my $out;
+    lives_ok { pandoc in => \"# hi", out => \$out };
+    is $out, "<h1 id=\"hi\">hi</h1>\n", 'run( %opts )';
+};
+
 subtest '->run(\@args, qw[odd length list])' => sub {
     my $in = 'foo';
     my %opts = ( in => \$in, out => \my($out), err => \my($err) );

@@ -61,19 +61,19 @@ sub pandoc(@) { ## no critic
 sub run {
     my $pandoc = shift;
 
-    # We shift/pop these args but want to remember what reftype they were
-    my %is_ref = ( args => ('ARRAY' eq ref $_[0] ),
-                   opts => ('HASH' eq ref $_[-1]) );
-    my @args   = $is_ref{args} ? @{ shift @_ } : ();
-    my %opts   = $is_ref{opts} ? %{pop @_} : ();
+    my $args = 'ARRAY' eq ref $_[0] ? \@{shift @_} : undef; # \@args [ ... ]
+    my $opts = 'HASH' eq ref $_[-1] ? \%{pop @_} : undef;   # [ ... ] \%opts
+    
     if ( @_ ) {
-        if ( !$is_ref{args} ) {
-            # default to the old behavior
-            @args = @_;
+        if ( !$args ) {                                     # @args
+            if ($_[0] =~ /^-/) {
+                $args = \@_;
+            } else {                                        # %opts
+                $opts = { @_ };
+            }
         }
-        elsif ( $is_ref{args} and !$is_ref{opts} and (@_ % 2 == 0) ) {
-            # if args were passed by reference other arguments are options
-            %opts = @_;
+        elsif ( $args and !$opts and (@_ % 2 == 0) ) {      # \@args [, %opts ]
+            $opts = { @_ };
         }
         else {
             # passed both the args and opts by ref,
@@ -83,20 +83,21 @@ sub run {
         }
     }
 
-    my $in  = $opts{in};
-    my $out = $opts{out};
-    my $err = $opts{err};
-    $opts{return_if_system_error} //= 1;
+    $args //= [];
+    $opts //= {};
 
     for my $io ( qw(in out err) ) {
-        $opts{"binmode_std$io"} //= $opts{binmode} if $opts{binmode};
-        if ( 'SCALAR' eq ref $opts{$io} ) {
-            next unless utf8::is_utf8(${$opts{$io}});
-            $opts{"binmode_std$io"} //= ':encoding(UTF-8)';
+        $opts->{"binmode_std$io"} //= $opts->{binmode} if $opts->{binmode};
+        if ( 'SCALAR' eq ref $opts->{$io} ) {
+            next unless utf8::is_utf8(${$opts->{$io}});
+            $opts->{"binmode_std$io"} //= ':encoding(UTF-8)';
         }
     }
 
-    run3 [ $pandoc->{bin}, @{$pandoc->{arguments}}, @args ], $in, $out, $err, \%opts;
+    $opts->{return_if_system_error} //= 1;
+    $args = [ $pandoc->{bin}, @{$pandoc->{arguments}}, @$args ];
+
+    run3 $args, $opts->{in}, $opts->{out}, $opts->{err}, $opts;    
 
     return $? == -1 ? -1 : $? >> 8;
 }
@@ -240,28 +241,28 @@ function C<pandoc> but it can also be used as class.
 
 =head1 FUNCTIONS
 
-=head2 pandoc [ @arguments [, \%options ] ]
+=head1 pandoc
 
-=head2 pandoc [ \@arguments [, %options | \%options ] ]
+If called without parameters, this function returns a singleton instance of
+class Pandoc to execute L<methods|/METHODS>, or C<undef> if no pandoc
+executable was found. 
 
-If called without arguments and options, the function returns a singleton
-instance of class Pandoc to execute L<methods|/METHODS>, or C<undef> if no
-pandoc executable was found. Otherwise runs the pandoc executable with given
-command line arguments. Additional options control input, output, and error
-stream as described below.
+=head2 pandoc ... 
 
-Arguments and options can be passed as plain array/hash or as (possibly empty)
-reference but one of them must be a reference if both are provided or if one of
-both is empty.
+If called with parameters, this functions runs the pandoc executable. Arguments
+are passed as command line arguments and options control input, output, and
+error stream as described below. Returns C<0> on success.  Otherwise returns
+the the exit code of pandoc executable or C<-1> if execution failed.  Arguments
+and options can be passed as plain array/hash or as (possibly empty) reference
+in the following ways:
 
-  pandoc @arguments, { ... };    # ok
-  pandoc [ ... ], %options;      # ok
+  pandoc @arguments, \%options;     # ok
+  pandoc \@arguments, %options;     # ok
+  pandoc \@arguments, \%options;    # ok
+  pandoc @arguments;                # ok, if first of @arguments starts with '-'
+  pandoc %options;                  # ok, if %options is not empty
 
-  pandoc @arguments, %options;   # not ok!
-
-If called with arguments and/or options, the function returns C<0> on success.
-Otherwise it returns the the exit code of pandoc executable or C<-1> if
-execution failed.
+  pandoc @arguments, %options;      # not ok!
 
 =head3 Options
 
@@ -302,7 +303,7 @@ references.
 
 =head1 METHODS
 
-=head2 new( [ [ $executable ] [, @arguments ] )
+=head2 new( [ $executable ] [, @arguments ] )
 
 Create a new instance of class Pandoc or throw an exception if no pandoc
 executable was found. The first argument, if given and not starting with C<->,
@@ -312,11 +313,10 @@ arguments are passed to the executable on each run.
 Repeated use of this constructor with same arguments is not recommended because
 C<pandoc --version> is called for every new instance.
 
-=head2 run( [ @arguments, \%options ] )
+=head2 run( ... )
 
-=head2 run( [ \@arguments [ %options | \%options ] ] )
-
-Execute the pandoc executable (see function C<pandoc> above).
+Execute the pandoc executable with default arguments and optional additional
+arguments and options. See L<<function C<pandoc>|/FUNCTIONS>> for usage.
 
 =head2 require( $minimum_version )
 
