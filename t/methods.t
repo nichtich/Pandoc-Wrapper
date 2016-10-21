@@ -1,6 +1,7 @@
 use strict;
 use Test::More;
 use Test::Exception;
+use File::Which;
 use Pandoc;
 
 plan skip_all => 'pandoc executable required' unless pandoc;
@@ -29,7 +30,7 @@ plan skip_all => 'pandoc executable required' unless pandoc;
     my $pandoc = Pandoc->new; 
     is_deeply $pandoc, pandoc(), 'Pandoc->new';
     ok $pandoc != pandoc, 'Pandoc->new creates new instance';
-    is $pandoc->bin, 'pandoc', 'default executable';
+    is $pandoc->bin, which('pandoc'), 'default executable';
 
     throws_ok { Pandoc->new('/dev/null/notexist') }
         qr{pandoc executable not found};

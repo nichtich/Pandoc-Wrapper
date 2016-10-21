@@ -14,6 +14,7 @@ Pandoc - interface to the Pandoc document converter
 use version 0.77; our $VERSION = version->declare('0.2.2');
 
 use Carp 'croak';
+use File::Which;
 use IPC::Run3;
 use parent 'Exporter';
 our @EXPORT = qw(pandoc);
@@ -32,13 +33,16 @@ sub import {
 
 sub new {
     my $pandoc = bless { }, shift;
-    $pandoc->{bin} = (@_ and $_[0] =~ /^[^-]+/) ? shift : 'pandoc';
+
+    $pandoc->{bin} = which((@_ and $_[0] =~ /^[^-]+/) ? shift : 'pandoc');
     $pandoc->{arguments} = \@_;
 
     my ($in, $out);
 
-    run3 [ $pandoc->{bin},'-v'], \$in, \$out, \undef,
-        { return_if_system_error => 1 };
+    if ($pandoc->{bin}) {
+        run3 [ $pandoc->{bin},'-v'], \$in, \$out, \undef,
+            { return_if_system_error => 1 };
+    }
     croak "pandoc executable not found\n" unless
         $out and $out =~ /^pandoc (\d+(\.\d+)+)/;
 
