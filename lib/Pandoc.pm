@@ -34,7 +34,12 @@ sub import {
 sub new {
     my $pandoc = bless { }, shift;
 
-    $pandoc->{bin} = which((@_ and $_[0] =~ /^[^-]+/) ? shift : 'pandoc');
+    say STDERR $File::Which::VERSION;
+    my $which = (@_ and $_[0] !~ /^-./) ? shift : 'pandoc';
+    say STDERR $which;
+    $pandoc->{bin} = which($which);
+ 
+    say STDERR "BIN: " . $pandoc->{bin};
 
     $pandoc->{arguments} = [];
     $pandoc->arguments(@_) if @_;
@@ -42,7 +47,7 @@ sub new {
     my ($in, $out);
 
     if ($pandoc->{bin}) {
-        run3 [ $pandoc->{bin},'-v'], \$in, \$out, \undef,
+        say run3 [ $pandoc->{bin},'-v'], \$in, \$out, \undef,
             { return_if_system_error => 1 };
     }
     croak "pandoc executable not found\n" unless

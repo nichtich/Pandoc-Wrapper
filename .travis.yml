@@ -23,7 +23,8 @@ before_script:
   - pandoc --version
 
 script:
-  - milla smoke --release --author
+  - perl -Ilib t/methods.t
+    #  - milla smoke --release --author
 
 after_success:
   - cpanm --quiet --notest --skip-satisfied Devel::Cover::Report::Coveralls
