@@ -30,9 +30,19 @@ plan skip_all => 'pandoc executable required' unless pandoc;
     my $pandoc = Pandoc->new; 
     is_deeply $pandoc, pandoc(), 'Pandoc->new';
     ok $pandoc != pandoc, 'Pandoc->new creates new instance';
-    is $pandoc->bin, which('pandoc'), 'default executable';
 
     throws_ok { Pandoc->new('/dev/null/notexist') }
+        qr{pandoc executable not found};
+}
+
+# bin
+{
+    is pandoc->bin, which('pandoc'), 'default executable';
+    
+    # not an full test but part of it
+    lives_ok { pandoc->bin( pandoc->bin ) } 'set executable';
+
+    throws_ok { pandoc->bin('/dev/null/notexist') }
         qr{pandoc executable not found};
 }
 
@@ -60,12 +70,25 @@ plan skip_all => 'pandoc executable required' unless pandoc;
     my $pandoc = Pandoc->new(qw(--smart -t html));
     is_deeply [$pandoc->arguments], [qw(--smart -t html)], 'arguments';
 
+    $pandoc = Pandoc->new(qw(pandoc --smart -t html));
+    is pandoc->bin, which('pandoc'), 'executable and arguments';
+    is_deeply [$pandoc->arguments], [qw(--smart -t html)], 'arguments';
+
     my ($in, $out) = ('*...*');
     is $pandoc->run([], in => \$in, out => \$out), 0, 'run';
     is $out, "<p><em>…</em></p>\n", 'use default arguments';
 
     is $pandoc->run( '-t' => 'latex', { in => \$in, out => \$out }), 0, 'run';
     is $out, "\\emph{\\ldots{}}\n", 'override default arguments';
+
+    throws_ok { $pandoc->arguments(1) }
+        qr/^first default argument must be an -option/;
+
+    pandoc->arguments('--smart');
+    is_deeply [ pandoc->arguments ], ['--smart'], 'set arguments';
+    
+    pandoc->arguments([]);
+    is_deeply [ pandoc->arguments ], [], 'set arguments with array ref';
 }
 
 # data_dir

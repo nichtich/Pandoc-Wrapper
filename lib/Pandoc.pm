@@ -35,7 +35,9 @@ sub new {
     my $pandoc = bless { }, shift;
 
     $pandoc->{bin} = which((@_ and $_[0] =~ /^[^-]+/) ? shift : 'pandoc');
-    $pandoc->{arguments} = \@_;
+
+    $pandoc->{arguments} = [];
+    $pandoc->arguments(@_) if @_;
 
     my ($in, $out);
 
@@ -154,11 +156,23 @@ sub data_dir {
 }
 
 sub bin {
-    $_[0]->{bin};
+    my $pandoc = shift;
+    if (@_) {
+        my $new = Pandoc->new(shift);
+        $pandoc->{$_} = $new->{$_} for (qw(version bin data_dir));
+    }
+    $pandoc->{bin};
 }
 
 sub arguments {
-    @{$_[0]->{arguments}};
+    my $pandoc = shift;
+    if (@_) {
+        my $args = 'ARRAY' eq ref $_[0] ? shift : \@_;
+        croak "first default argument must be an -option"
+            if @$args and $args->[0] !~ /^-./;
+        $pandoc->{arguments} = $args;
+    }
+    @{$pandoc->{arguments}};
 }
 
 sub _help { # not documented. may change to return structured data
@@ -341,13 +355,13 @@ in same utf8 mode (C<utf8::is_unicode>) as the input.
 Return the pandoc version as L<version> object. Returns undef if the version is
 lower than a given minimum version.
 
-=head2 bin
+=head2 bin( [ $executable ] )
 
-Return the pandoc executable.
+Return or set the pandoc executable.
 
-=head2 arguments
+=head2 arguments( [ @arguments | \@arguments )
 
-Return a list of default arguments.
+Return or set a list of default arguments.
 
 =head2 data_dir
 
