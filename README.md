@@ -36,9 +36,14 @@ Pandoc - interface to the Pandoc document converter
     say pandoc->bin." ".pandoc->version;
     say "Default user data directory: ".pandoc->data_dir;
 
-    # create an instance with default options
+    # create an instance with default arguments
     my $md2latex = Pandoc->new(qw(-f markdown -t latex --smart));
     $md2latex->run({ in => \$markdown, out => \$latex });
+
+    # set default arguments on compile time
+    use Pandoc qw(-t latex);
+    use Pandoc qw(/ur/bin/pandoc --smart);
+    use Pandoc qw(1.16 --smart);
 
 # DESCRIPTION
 
@@ -48,28 +53,28 @@ function `pandoc` but it can also be used as class.
 
 # FUNCTIONS
 
-## pandoc \[ @arguments \[, \\%options \] \]
+# pandoc
 
-## pandoc \[ \\@arguments \[, %options | \\%options \] \]
+If called without parameters, this function returns a singleton instance of
+class Pandoc to execute [methods](#methods), or `undef` if no pandoc
+executable was found. 
 
-If called without arguments and options, the function returns a singleton
-instance of class Pandoc to execute [methods](#methods), or `undef` if no
-pandoc executable was found. Otherwise runs the pandoc executable with given
-command line arguments. Additional options control input, output, and error
-stream as described below.
+## pandoc ... 
 
-Arguments and options can be passed as plain array/hash or as (possibly empty)
-reference but one of them must be a reference if both are provided or if one of
-both is empty.
+If called with parameters, this functions runs the pandoc executable. Arguments
+are passed as command line arguments and options control input, output, and
+error stream as described below. Returns `0` on success.  Otherwise returns
+the the exit code of pandoc executable or `-1` if execution failed.  Arguments
+and options can be passed as plain array/hash or as (possibly empty) reference
+in the following ways:
 
-    pandoc @arguments, { ... };    # ok
-    pandoc [ ... ], %options;      # ok
+    pandoc @arguments, \%options;     # ok
+    pandoc \@arguments, %options;     # ok
+    pandoc \@arguments, \%options;    # ok
+    pandoc @arguments;                # ok, if first of @arguments starts with '-'
+    pandoc %options;                  # ok, if %options is not empty
 
-    pandoc @arguments, %options;   # not ok!
-
-If called with arguments and/or options, the function returns `0` on success.
-Otherwise it returns the the exit code of pandoc executable or `-1` if
-execution failed.
+    pandoc @arguments, %options;      # not ok!
 
 ### Options
 
@@ -106,7 +111,7 @@ references.
 
 # METHODS
 
-## new( \[ \[ $executable \] \[, @arguments \] )
+## new( \[ $executable \] \[, @arguments \] )
 
 Create a new instance of class Pandoc or throw an exception if no pandoc
 executable was found. The first argument, if given and not starting with `-`,
@@ -116,11 +121,10 @@ arguments are passed to the executable on each run.
 Repeated use of this constructor with same arguments is not recommended because
 `pandoc --version` is called for every new instance.
 
-## run( \[ @arguments, \\%options \] )
+## run( ... )
 
-## run( \[ \\@arguments \[ %options | \\%options \] \] )
-
-Execute the pandoc executable (see function `pandoc` above).
+Execute the pandoc executable with default arguments and optional additional
+arguments and options. See [<function `pandoc`](#functions)> for usage.
 
 ## require( $minimum\_version )
 
@@ -140,13 +144,13 @@ in same utf8 mode (`utf8::is_unicode`) as the input.
 Return the pandoc version as [version](https://metacpan.org/pod/version) object. Returns undef if the version is
 lower than a given minimum version.
 
-## bin
+## bin( \[ $executable \] )
 
-Return the pandoc executable.
+Return or set the pandoc executable.
 
-## arguments
+## arguments( \[ @arguments | \\@arguments )
 
-Return a list of default arguments.
+Return or set a list of default arguments.
 
 ## data\_dir
 

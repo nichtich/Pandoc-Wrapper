@@ -1,6 +1,9 @@
 Revision history for Pandoc Perl module
 
 {{$NEXT}}
+    - support setting default arguments on import
+    - make bin and arguments setters
+    - use File::Which to find executable
 
 0.2.2  2016-10-20 11:20:36 CEST
     - support default arguments
