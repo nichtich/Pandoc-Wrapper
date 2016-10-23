@@ -34,6 +34,13 @@ sub import {
     Pandoc->export_to_level(1, 'pandoc');
 }
 
+sub VERSION {
+    shift;
+    $PANDOC //= Pandoc->new;
+    $PANDOC->require(shift) if @_;
+    $PANDOC->version;
+}
+
 sub new {
     my $pandoc = bless { }, shift;
 

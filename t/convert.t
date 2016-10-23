@@ -16,8 +16,8 @@ utf8::decode($html);
 my $markdown = pandoc->convert('html' => 'markdown', $html);
 is $markdown, "\x{2026}", 'convert returns Unicode to Unicode'; 
 
-eval { pandoc->convert('latex' => 'html', '', '--template' => '') };
-like $@, qr/^pandoc: /, 'croak on error';
+throws_ok { pandoc->convert('latex' => 'html', '', '--template' => '') }
+    qr/^pandoc: /, 'croak on error';
 
 like pandoc->convert('latex' => 'html', '$\rightarrow$'), qr/→/, 'unicode';
 
