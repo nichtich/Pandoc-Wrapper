@@ -258,26 +258,34 @@ __END__
   say pandoc->bin." ".pandoc->version;
   say "Default user data directory: ".pandoc->data_dir;
 
-  # create an instance with default arguments
+  # create a new instance with default arguments
   my $md2latex = Pandoc->new(qw(-f markdown -t latex --smart));
   $md2latex->run({ in => \$markdown, out => \$latex });
 
   # set default arguments on compile time
   use Pandoc qw(-t latex);
-  use Pandoc qw(/ur/bin/pandoc --smart);
+  use Pandoc qw(/usr/bin/pandoc --smart);
   use Pandoc qw(1.16 --smart);
 
 =head1 DESCRIPTION
 
 This module provides a Perl interface to John MacFarlane's
-L<Pandoc|http://pandoc.org> document converter. The module exports utility
-function C<pandoc> but it can also be used as class.
+L<Pandoc|http://pandoc.org> document converter. The utility function
+L<pandoc|/pandoc> is exported, unless the module is imported with an empty list
+(C<use Pandoc ();>). Another utility method converts strings between different
+markup formats supported by pandoc (C<< pandoc->convert(...) >>).
+
+Importing this module with a version number (e.g. C<use Pandoc 1.13;>) will
+check version number of pandoc executable instead of version number of this
+module (C<$Pandoc::VERSION>). Additional import arguments can be passed to set
+the executable location and default arguments of the global Pandoc instance
+used by function pandoc.
 
 =head1 FUNCTIONS
 
-=head1 pandoc
+=head2 pandoc
 
-If called without parameters, this function returns a singleton instance of
+If called without parameters, this function returns a global instance of
 class Pandoc to execute L<methods|/METHODS>, or C<undef> if no pandoc
 executable was found. 
 
