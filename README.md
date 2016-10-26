@@ -23,9 +23,6 @@ Pandoc - interface to the Pandoc document converter
     pandoc [ -f => 'html', -t => 'markdown' ], in => \$html, out => \$md;
     pandoc [ -f => 'html', -t => 'markdown' ], { in => \$html, out => \$md };
 
-    # utility method to convert from string
-    $latex = pandoc->convert( 'markdown' => 'latex', '*hello*' );
-
     # check executable
     pandoc or die "pandoc executable not found";
 
@@ -36,37 +33,53 @@ Pandoc - interface to the Pandoc document converter
     say pandoc->bin." ".pandoc->version;
     say "Default user data directory: ".pandoc->data_dir;
 
-    # create an instance with default arguments
+    # create a new instance with default arguments
     my $md2latex = Pandoc->new(qw(-f markdown -t latex --smart));
     $md2latex->run({ in => \$markdown, out => \$latex });
 
     # set default arguments on compile time
     use Pandoc qw(-t latex);
-    use Pandoc qw(/ur/bin/pandoc --smart);
+    use Pandoc qw(/usr/bin/pandoc --smart);
     use Pandoc qw(1.16 --smart);
+
+
+    # utility method to convert from string
+    $latex = pandoc->convert( 'markdown' => 'latex', '*hello*' );
+
+    # utility method to parse abstract syntax tree
+    $doc = pandoc->parse( markdown => '*hello* **world!**' );
 
 # DESCRIPTION
 
 This module provides a Perl interface to John MacFarlane's
-[Pandoc](http://pandoc.org) document converter. The module exports utility
-function `pandoc` but it can also be used as class.
+[Pandoc](http://pandoc.org) document converter. The utility function
+[pandoc](#pandoc) is exported, unless the module is imported with an empty list
+(`use Pandoc ();`). Another utility method converts strings between different
+markup formats supported by pandoc (`pandoc->convert(...)`).
+
+Importing this module with a version number (e.g. `use Pandoc 1.13;`) will
+check version number of pandoc executable instead of version number of this
+module (`$Pandoc::VERSION`). Additional import arguments can be passed to set
+the executable location and default arguments of the global Pandoc instance
+used by function pandoc.
 
 # FUNCTIONS
 
-# pandoc
+## pandoc
 
-If called without parameters, this function returns a singleton instance of
+If called without parameters, this function returns a global instance of
 class Pandoc to execute [methods](#methods), or `undef` if no pandoc
 executable was found. 
 
-## pandoc ... 
+## pandoc( ... ) 
 
-If called with parameters, this functions runs the pandoc executable. Arguments
-are passed as command line arguments and options control input, output, and
-error stream as described below. Returns `0` on success.  Otherwise returns
-the the exit code of pandoc executable or `-1` if execution failed.  Arguments
-and options can be passed as plain array/hash or as (possibly empty) reference
-in the following ways:
+If called with parameters, this functions runs the pandoc executable configured
+at the global instance of class Pandoc (`pandoc->bin`). Arguments are
+passed as command line arguments and options control input, output, and error
+stream as described below. Returns `0` on success.  Otherwise returns the the
+exit code of pandoc executable or `-1` if execution failed.  Arguments and
+options can be passed as plain array/hash or as (possibly empty) reference in
+the following ways:
 
     pandoc @arguments, \%options;     # ok
     pandoc \@arguments, %options;     # ok
@@ -126,6 +139,18 @@ Repeated use of this constructor with same arguments is not recommended because
 Execute the pandoc executable with default arguments and optional additional
 arguments and options. See [<function `pandoc`](#functions)> for usage.
 
+## convert( $from => $to, $input \[, @arguments \] )
+
+Convert a string in format `$from` to format `$to`. Additional pandoc options
+such as `--smart` and `--standalone` can be passed. The result is returned
+in same utf8 mode (`utf8::is_unicode`) as the input.
+
+## parse( $from => $input \[, @arguments \] )
+
+Parse a string in format `$from` to a [Pandoc::Document](https://metacpan.org/pod/Pandoc::Document) object. Additional 
+pandoc options such as `--smart` and `--normalize` can be passed. This method
+requires at least pandoc version 1.12.1 and the Perl module [Pandoc::Elements](https://metacpan.org/pod/Pandoc::Elements).
+
 ## require( $minimum\_version )
 
 Return the Pandoc instance if its version number is at least as high as the
@@ -133,20 +158,21 @@ given minimum version. Throw an error otherwise.  This method can also be
 called as constructor: `Pandoc->require(...)` is equivalent to `pandoc->require` but throws a more meaningful error message if no pandoc
 executable was found.
 
-## convert( $from => $to, $input \[, @arguments \] )
-
-Convert a string in format `$from` to format `$to`. Additional pandoc options
-such as `--smart` and `--standalone` can be passed. The result is returned
-in same utf8 mode (`utf8::is_unicode`) as the input.
-
 ## version( \[ $minimum\_version \] )
 
-Return the pandoc version as [version](https://metacpan.org/pod/version) object. Returns undef if the version is
-lower than a given minimum version.
+Return the pandoc version as [version](https://metacpan.org/pod/version) object. The version number is
+normalized to always start with a small letter "v", for instance "v1.16.0.2" or
+"v1.17".  If a minimum version is passed, the method returns undef if the
+pandoc version is lower. To check whether pandoc is available with a given
+minimal version use one of:
+
+    Pandoc->require( $minimum_version)                # true or die
+    pandoc and pandoc->version( $minimum_version )    # true or false
 
 ## bin( \[ $executable \] )
 
-Return or set the pandoc executable.
+Return or set the pandoc executable. Setting an new executable also updates
+version and data\_dir by calling `pandoc --version`.
 
 ## arguments( \[ @arguments | \\@arguments )
 

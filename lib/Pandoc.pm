@@ -11,7 +11,7 @@ Pandoc - interface to the Pandoc document converter
 
 =cut
 
-use version 0.77; our $VERSION = version->declare('0.3.0');
+use version 0.77; our $VERSION = version->declare('0.3.1');
 
 use Carp 'croak';
 use File::Which;
