@@ -140,6 +140,22 @@ sub convert {
     return $out;
 }
 
+sub parse {
+    my $pandoc = shift;
+    my $format = shift;
+    my $json   = "";
+
+    if ($format eq 'json') {
+        $json = shift;
+    } else {
+        $pandoc->require('1.12.1');
+        $json = $pandoc->convert( $format => 'json', @_ );
+    }
+    
+    require Pandoc::Elements;
+    Pandoc::Elements::pandoc_json($json);
+}
+
 sub require {
     my ($pandoc, $version) = @_;
     $pandoc = do { $PANDOC //= Pandoc->new } if $pandoc eq 'Pandoc'; 
@@ -249,9 +265,6 @@ __END__
   pandoc [ -f => 'html', -t => 'markdown' ], in => \$html, out => \$md;
   pandoc [ -f => 'html', -t => 'markdown' ], { in => \$html, out => \$md };
 
-  # utility method to convert from string
-  $latex = pandoc->convert( 'markdown' => 'latex', '*hello*' );
-
   # check executable
   pandoc or die "pandoc executable not found";
 
@@ -270,6 +283,13 @@ __END__
   use Pandoc qw(-t latex);
   use Pandoc qw(/usr/bin/pandoc --smart);
   use Pandoc qw(1.16 --smart);
+
+
+  # utility method to convert from string
+  $latex = pandoc->convert( 'markdown' => 'latex', '*hello*' );
+
+  # utility method to parse abstract syntax tree
+  $doc = pandoc->parse( markdown => '*hello* **world!**' );
 
 =head1 DESCRIPTION
 
@@ -293,14 +313,15 @@ If called without parameters, this function returns a global instance of
 class Pandoc to execute L<methods|/METHODS>, or C<undef> if no pandoc
 executable was found. 
 
-=head2 pandoc ... 
+=head2 pandoc( ... ) 
 
-If called with parameters, this functions runs the pandoc executable. Arguments
-are passed as command line arguments and options control input, output, and
-error stream as described below. Returns C<0> on success.  Otherwise returns
-the the exit code of pandoc executable or C<-1> if execution failed.  Arguments
-and options can be passed as plain array/hash or as (possibly empty) reference
-in the following ways:
+If called with parameters, this functions runs the pandoc executable configured
+at the global instance of class Pandoc (C<< pandoc->bin >>). Arguments are
+passed as command line arguments and options control input, output, and error
+stream as described below. Returns C<0> on success.  Otherwise returns the the
+exit code of pandoc executable or C<-1> if execution failed.  Arguments and
+options can be passed as plain array/hash or as (possibly empty) reference in
+the following ways:
 
   pandoc @arguments, \%options;     # ok
   pandoc \@arguments, %options;     # ok
@@ -364,6 +385,18 @@ C<pandoc --version> is called for every new instance.
 Execute the pandoc executable with default arguments and optional additional
 arguments and options. See L<<function C<pandoc>|/FUNCTIONS>> for usage.
 
+=head2 convert( $from => $to, $input [, @arguments ] )
+
+Convert a string in format C<$from> to format C<$to>. Additional pandoc options
+such as C<--smart> and C<--standalone> can be passed. The result is returned
+in same utf8 mode (C<utf8::is_unicode>) as the input.
+
+=head2 parse( $from => $input [, @arguments ] )
+
+Parse a string in format C<$from> to a L<Pandoc::Document> object. Additional 
+pandoc options such as C<--smart> and C<--normalize> can be passed. This method
+requires at least pandoc version 1.12.1 and the Perl module L<Pandoc::Elements>.
+
 =head2 require( $minimum_version )
 
 Return the Pandoc instance if its version number is at least as high as the
@@ -372,22 +405,21 @@ called as constructor: C<< Pandoc->require(...) >> is equivalent to C<<
 pandoc->require >> but throws a more meaningful error message if no pandoc
 executable was found.
 
-=head2 convert( $from => $to, $input [, @arguments ] )
-
-Convert a string in format C<$from> to format C<$to>. Additional pandoc options
-such as C<--smart> and C<--standalone> can be passed. The result is returned
-in same utf8 mode (C<utf8::is_unicode>) as the input.
-
 =head2 version( [ $minimum_version ] )
 
 Return the pandoc version as L<version> object. The version number is
 normalized to always start with a small letter "v", for instance "v1.16.0.2" or
 "v1.17".  If a minimum version is passed, the method returns undef if the
-pandoc version is lower.
+pandoc version is lower. To check whether pandoc is available with a given
+minimal version use one of:
+
+  Pandoc->require( $minimum_version)                # true or die
+  pandoc and pandoc->version( $minimum_version )    # true or false
 
 =head2 bin( [ $executable ] )
 
-Return or set the pandoc executable.
+Return or set the pandoc executable. Setting an new executable also updates
+version and data_dir by calling C<pandoc --version>.
 
 =head2 arguments( [ @arguments | \@arguments )
 

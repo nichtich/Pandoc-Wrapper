@@ -4,7 +4,7 @@ use Test::Exception;
 
 BEGIN {
     require Pandoc;
-    if ($ENV{RELEASE_TEST}) {
+    if ($ENV{RELEASE_TESTING}) {
         Pandoc->import(qw(-t latex));
     } else {
         plan skip_all => 'these tests are for release candidate testing';
