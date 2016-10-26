@@ -1,6 +1,8 @@
 Revision history for Pandoc Perl module
 
 {{$NEXT}}
+
+0.3.1  2016-10-26 20:37:24 CEST
     - add parse method
     - fix version number comparision
     - extend documentation
