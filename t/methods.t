@@ -9,7 +9,7 @@ plan skip_all => 'pandoc executable required' unless pandoc;
 # import
 {
     throws_ok { Pandoc->import('999.9.9') }
-        qr/^pandoc 999\.9\.9 required, only found \d+(\.\d)+/,
+        qr/^pandoc v999\.9\.9 required, only found v\d+(\.\d)+/,
         'import';
 }
 
@@ -21,7 +21,7 @@ plan skip_all => 'pandoc executable required' unless pandoc;
     lives_ok { pandoc->require('0.1.0.1') } 'pandoc->require';
     throws_ok { pandoc->require('x') } qr{ at t/methods.t}m, 'require throws)';
     throws_ok { pandoc->require('12345.67') }
-        qr/^pandoc 12345\.67 required, only found \d+(\.\d)+/,
+        qr/^pandoc v12345\.67 required, only found v\d+(\.\d)+/,
         'require throws';
 }
 
@@ -49,7 +49,7 @@ plan skip_all => 'pandoc executable required' unless pandoc;
 # version
 {
     my $version = pandoc->version;
-    like( $version, qr/^\d+(.\d+)+$/, 'pandoc->version' );
+    like( $version, qr/^v\d+(.\d+)+$/, 'pandoc->version' );
     isa_ok $version, 'version', 'pandoc->version is a version object';
 
     ok pandoc->version >= $version, 'compare same versions';

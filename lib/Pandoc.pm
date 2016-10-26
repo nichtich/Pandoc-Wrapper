@@ -59,7 +59,7 @@ sub new {
     croak "pandoc executable not found\n" unless
         $out and $out =~ /^pandoc (\d+(\.\d+)+)/;
 
-    $pandoc->{version} = version->parse($1);
+    $pandoc->{version} = version->parse("v$1");
     $pandoc->{data_dir} = $1 if $out =~ /^Default user data directory: (.+)$/m;
 
     return $pandoc;
@@ -143,8 +143,10 @@ sub convert {
 sub require {
     my ($pandoc, $version) = @_;
     $pandoc = do { $PANDOC //= Pandoc->new } if $pandoc eq 'Pandoc'; 
-    croak "pandoc $version required, only found ".$pandoc->{version}."\n"
-        unless $pandoc->version($version);
+    unless ($pandoc->version($version)) {
+        $version = version->parse($version =~ /^v/ ? $version : "v$version");
+        croak "pandoc $version required, only found ".$pandoc->{version}."\n"
+    }
     return $pandoc;
 }
 
@@ -154,8 +156,10 @@ sub version {
 
     # compare against given version
     if (@_) {
-        my $version = eval { version->parse($_[0]) } or
-            croak "Invalid version format: $_[0]";
+        my $v = shift;
+        $v = "v$v" unless $v =~ /^v/; # force dotted decimal format
+        my $version = eval { version->parse($v) } or
+            croak "Invalid version format: $v";
         return if $version > $pandoc->{version};
     }
 
@@ -376,8 +380,10 @@ in same utf8 mode (C<utf8::is_unicode>) as the input.
 
 =head2 version( [ $minimum_version ] )
 
-Return the pandoc version as L<version> object. Returns undef if the version is
-lower than a given minimum version.
+Return the pandoc version as L<version> object. The version number is
+normalized to always start with a small letter "v", for instance "v1.16.0.2" or
+"v1.17".  If a minimum version is passed, the method returns undef if the
+pandoc version is lower.
 
 =head2 bin( [ $executable ] )
 
