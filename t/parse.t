@@ -5,6 +5,8 @@ use Pandoc;
 
 plan skip_all => 'pandoc executable >= 1.12.1 required'
     unless pandoc and pandoc->version('1.12.1');
+plan skip_all => 'pandoc executable < 1.18 required' # FIXME in Pandoc::Elements
+    if pandoc->version('1.18');
 plan skip_all => 'Pandoc::Elements required'
     unless eval { require Pandoc::Elements; 1 }; 
 
