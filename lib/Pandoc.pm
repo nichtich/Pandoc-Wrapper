@@ -206,32 +206,34 @@ sub arguments {
     @{$pandoc->{arguments}};
 }
 
-sub _help { # not documented. may change to return structured data
-    my ($pandoc) = @_;
-
-	unless (defined $pandoc->{help}) {
-		my $help;
-    	$pandoc->run('--help', { out => \$help });
-		for my $inout (qw(Input Output)) {
-			$help =~ /^$inout formats:\s+([a-z_0-9,\+\s*]+)/m;
-			$pandoc->{lc($inout).'_formats'} = [ split /,\s+|\s+/, $1 ]
-		}
-	    $pandoc->{help} = $help;
+sub _list {
+    my ($pandoc, $which) = @_;
+    if (!$pandoc->{$which}) {
+        if ($pandoc->version('1.18')) {
+            my $list = "";
+            my $command = $which;
+            $command =~ s/_/-/g;
+            $pandoc->run("--list-$command", { out => \$list });
+	        $pandoc->{$which} = [ split /\n/, $list ];
+        } elsif (!defined $pandoc->{help}) {
+            my $help;
+            $pandoc->run('--help', { out => \$help });
+            for my $inout (qw(Input Output)) {
+                $help =~ /^$inout formats:\s+([a-z_0-9,\+\s*]+)/m or next;
+                $pandoc->{lc($inout).'_formats'} = [ split /,\s+|\s+/, $1 ]
+            }
+            $pandoc->{help} = $help;
+        }
     }
-
-	$pandoc->{help} 
+    @{$pandoc->{$which}};
 }
 
 sub input_formats {
-    my ($pandoc) = @_;
-	$pandoc->_help;
-    @{$pandoc->{input_formats}};
+    $_[0]->_list('input_formats');
 }
 
 sub output_formats {
-    my ($pandoc) = @_;
-	$pandoc->_help;
-    @{$pandoc->{output_formats}};
+    $_[0]->_list('output_formats');
 }
 
 1;
