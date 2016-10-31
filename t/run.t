@@ -15,7 +15,7 @@ subtest 'pandoc( ... )' => sub {
 
     ## no critic
     pandoc -f => 'html', -t => 'markdown', { in => \$html, out => \$md };
-    is $md, "*.*\n", 'html => markdown';
+    like $md, qr/^\*\.\*/, 'html => markdown';
 };
 
 subtest 'run(@args, \%opts)' => sub {

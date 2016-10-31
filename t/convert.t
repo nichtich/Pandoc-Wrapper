@@ -14,7 +14,7 @@ is $html, "<p>\xE2\x80\xA6</p>", 'convert returns bytes';
 
 utf8::decode($html);
 my $markdown = pandoc->convert('html' => 'markdown', $html);
-is $markdown, "\x{2026}", 'convert returns Unicode to Unicode'; 
+like $markdown, qr{^\x{2026}}, 'convert returns Unicode to Unicode'; 
 
 throws_ok { pandoc->convert('latex' => 'html', '', '--template' => '') }
     qr/^pandoc: /, 'croak on error';
