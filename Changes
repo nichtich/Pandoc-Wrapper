@@ -1,6 +1,8 @@
 Revision history for Pandoc Perl module
 
 {{$NEXT}}
+
+0.4.0  2016-11-01 20:44:15 CET
     - add Pandoc::Version module for version numbers
     - allow setting executable via PANDOC_PATH environment variable
     - add method file to parse from file
