@@ -25,6 +25,8 @@ $VERSION = Pandoc::Version->new($VERSION);
 our $PANDOC;
 our $PANDOC_VERSION_SPEC = qr/^(\d+(\.\d+)*)$/;
 
+our $PANDOC_PATH ||= $ENV{PANDOC_PATH} || 'pandoc';
+
 sub import {
     shift;
 
@@ -47,7 +49,7 @@ sub VERSION {
 sub new {
     my $pandoc = bless { }, shift;
 
-    my $bin = (@_ and $_[0] !~ /^-./) ? shift : 'pandoc';
+    my $bin = (@_ and $_[0] !~ /^-./) ? shift : $PANDOC_PATH;
     $pandoc->{bin} = which($bin);
 
     $pandoc->{arguments} = [];
@@ -341,9 +343,10 @@ used by function pandoc.
 
 =head2 pandoc
 
-If called without parameters, this function returns a global instance of
-class Pandoc to execute L<methods|/METHODS>, or C<undef> if no pandoc
-executable was found. 
+If called without parameters, this function returns a global instance of class
+Pandoc to execute L<methods|/METHODS>, or C<undef> if no pandoc executable was
+found. The location and/or name of pandoc executable can be set with
+environment variable C<PANDOC_PATH> (set to "pandoc" by default).
 
 =head2 pandoc( ... ) 
 
