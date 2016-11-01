@@ -25,4 +25,7 @@ is $doc->string, '–', 'parse with addition arguments';
 
 is_deeply $doc, pandoc->parse( json => $doc->to_json ), 'parse json';
 
+my $ex = pandoc->file('t/example.md', '--smart');
+is_deeply $ex, $doc, 'parse_file';
+
 done_testing;

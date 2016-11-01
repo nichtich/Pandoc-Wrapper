@@ -132,8 +132,8 @@ sub convert {
 
     my $utf8 = utf8::is_utf8($in);
 
-    my $status = $pandoc->run( [ '-f' => $from, '-t' => $to, @_ ],
-        in => \$in, out => \$out, err => \$err );
+    my %opts = (in => \$in, out => \$out, err => \$err);
+    my $status = $pandoc->run( [ '-f' => $from, '-t' => $to, @_ ], \%opts );
 
     croak($err || "pandoc failed with exit code $status") if $status;
 
@@ -155,6 +155,21 @@ sub parse {
         $json = $pandoc->convert( $format => 'json', @_ );
     }
     
+    require Pandoc::Elements;
+    Pandoc::Elements::pandoc_json($json);
+}
+
+sub file {
+    my $pandoc = shift;
+    $pandoc->require('1.12.1');
+
+    my ($json, $err);
+    my @args = ('-t' => 'json', @_);
+    my $status = $pandoc->run( \@args, out => \$json, err => \$err );
+    croak($err || "pandoc failed with exit code $status") if $status;
+
+    #utf8::decode($out) if $utf8;
+
     require Pandoc::Elements;
     Pandoc::Elements::pandoc_json($json);
 }
@@ -286,8 +301,9 @@ __END__
   # utility method to convert from string
   $latex = pandoc->convert( 'markdown' => 'latex', '*hello*' );
 
-  # utility method to parse abstract syntax tree
+  # utility methods to parse abstract syntax tree (requires Pandoc::Elements)
   $doc = pandoc->parse( markdown => '*hello* **world!**' );
+  $doc = pandoc->file( 'example.md' );
 
 =head1 DESCRIPTION
 
@@ -394,6 +410,30 @@ in same utf8 mode (C<utf8::is_unicode>) as the input.
 Parse a string in format C<$from> to a L<Pandoc::Document> object. Additional 
 pandoc options such as C<--smart> and C<--normalize> can be passed. This method
 requires at least pandoc version 1.12.1 and the Perl module L<Pandoc::Elements>.
+
+=head2 file( $filename [, @arguments ] )
+
+Parse from a file to a L<Pandoc::Document> object. Additional pandoc options
+can be passed, for instance to set input format (markdown by default):
+
+  pandoc->parse_file('example.html', '-f', 'html')
+
+Requires at least pandoc version 1.12.1 and the Perl module L<Pandoc::Elements>.
+
+=head2 require( $minimum_version )
+
+Return the Pandoc instance if its version number is at least as high as the
+given minimum version. Throw an error otherwise.  This method can also be
+called as constructor: C<< Pandoc->require(...) >> is equivalent to C<<
+pandoc->require >> but throws a more meaningful error message if no pandoc
+executable was found.
+
+=head2 version( [ $minimum_version ] )
+
+Return the pandoc version as L<Pandoc::Version> object.  If a minimum version
+is given, the method returns undef if the pandoc version is lower. To check
+whether pandoc is available with a given minimal version use one of:
+
 
 =head2 require( $minimum_version )
 
