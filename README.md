@@ -27,11 +27,13 @@ Pandoc - interface to the Pandoc document converter
     pandoc or die "pandoc executable not found";
 
     # check minimum version
-    pandoc->version(1.12) or die "pandoc >= 1.12 required";
+    pandoc->version > 1.12 or die "pandoc >= 1.12 required";
 
     # access properties
     say pandoc->bin." ".pandoc->version;
     say "Default user data directory: ".pandoc->data_dir;
+    say "Compiled with: ".join(", ", keys %{ pandoc->libs });
+    say pandoc->libs->{'highlighting-kate'};
 
     # create a new instance with default arguments
     my $md2latex = Pandoc->new(qw(-f markdown -t latex --smart));
@@ -46,8 +48,9 @@ Pandoc - interface to the Pandoc document converter
     # utility method to convert from string
     $latex = pandoc->convert( 'markdown' => 'latex', '*hello*' );
 
-    # utility method to parse abstract syntax tree
+    # utility methods to parse abstract syntax tree (requires Pandoc::Elements)
     $doc = pandoc->parse( markdown => '*hello* **world!**' );
+    $doc = pandoc->file( 'example.md' );
 
 # DESCRIPTION
 
@@ -67,9 +70,10 @@ used by function pandoc.
 
 ## pandoc
 
-If called without parameters, this function returns a global instance of
-class Pandoc to execute [methods](#methods), or `undef` if no pandoc
-executable was found. 
+If called without parameters, this function returns a global instance of class
+Pandoc to execute [methods](#methods), or `undef` if no pandoc executable was
+found. The location and/or name of pandoc executable can be set with
+environment variable `PANDOC_PATH` (set to "pandoc" by default).
 
 ## pandoc( ... ) 
 
@@ -151,6 +155,15 @@ Parse a string in format `$from` to a [Pandoc::Document](https://metacpan.org/po
 pandoc options such as `--smart` and `--normalize` can be passed. This method
 requires at least pandoc version 1.12.1 and the Perl module [Pandoc::Elements](https://metacpan.org/pod/Pandoc::Elements).
 
+## file( $filename \[, @arguments \] )
+
+Parse from a file to a [Pandoc::Document](https://metacpan.org/pod/Pandoc::Document) object. Additional pandoc options
+can be passed, for instance to set input format (markdown by default):
+
+    pandoc->file('example.html', '-f', 'html')
+
+Requires at least pandoc version 1.12.1 and the Perl module [Pandoc::Elements](https://metacpan.org/pod/Pandoc::Elements).
+
 ## require( $minimum\_version )
 
 Return the Pandoc instance if its version number is at least as high as the
@@ -160,11 +173,22 @@ executable was found.
 
 ## version( \[ $minimum\_version \] )
 
-Return the pandoc version as [version](https://metacpan.org/pod/version) object. The version number is
-normalized to always start with a small letter "v", for instance "v1.16.0.2" or
-"v1.17".  If a minimum version is passed, the method returns undef if the
-pandoc version is lower. To check whether pandoc is available with a given
-minimal version use one of:
+Return the pandoc version as [Pandoc::Version](https://metacpan.org/pod/Pandoc::Version) object.  If a minimum version
+is given, the method returns undef if the pandoc version is lower. To check
+whether pandoc is available with a given minimal version use one of:
+
+## require( $minimum\_version )
+
+Return the Pandoc instance if its version number is at least as high as the
+given minimum version. Throw an error otherwise.  This method can also be
+called as constructor: `Pandoc->require(...)` is equivalent to `pandoc->require` but throws a more meaningful error message if no pandoc
+executable was found.
+
+## version( \[ $minimum\_version \] )
+
+Return the pandoc version as [Pandoc::Version](https://metacpan.org/pod/Pandoc::Version) object.  If a minimum version
+is given, the method returns undef if the pandoc version is lower. To check
+whether pandoc is available with a given minimal version use one of:
 
     Pandoc->require( $minimum_version)                # true or die
     pandoc and pandoc->version( $minimum_version )    # true or false
@@ -190,11 +214,19 @@ Return a list of supported input formats.
 
 Return a list of supported output formats.
 
+## libs
+
+Return a hash of Haskell libraries compiled into pandoc executable and their
+version numbers as [Pandoc::Version](https://metacpan.org/pod/Pandoc::Version) objects.
+
 # SEE ALSO
 
 Use [Pandoc::Elements](https://metacpan.org/pod/Pandoc::Elements) for more elaborate document processing based on Pandoc.
 Other Pandoc related but outdated modules at CPAN include
 [Orze::Sources::Pandoc](https://metacpan.org/pod/Orze::Sources::Pandoc) and [App::PDoc](https://metacpan.org/pod/App::PDoc).
+
+See [pyandoc](https://pypi.python.org/pypi/pyandoc/) for a similar Pandoc
+wrapper in Python.
 
 # AUTHOR
 
