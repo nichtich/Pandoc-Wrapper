@@ -505,6 +505,9 @@ Use L<Pandoc::Elements> for more elaborate document processing based on Pandoc.
 Other Pandoc related but outdated modules at CPAN include
 L<Orze::Sources::Pandoc> and L<App::PDoc>.
 
+See L<pyandoc|https://pypi.python.org/pypi/pyandoc/> for a similar Pandoc
+wrapper in Python.
+
 =head1 AUTHOR
 
 Jakob Voß
