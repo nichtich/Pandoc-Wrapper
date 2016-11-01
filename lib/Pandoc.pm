@@ -11,13 +11,16 @@ Pandoc - interface to the Pandoc document converter
 
 =cut
 
-use version 0.77; our $VERSION = version->declare('0.3.1');
+our $VERSION = '0.3.1';
 
 use Carp 'croak';
 use File::Which;
 use IPC::Run3;
 use parent 'Exporter';
 our @EXPORT = qw(pandoc);
+
+use Pandoc::Version;
+$VERSION = Pandoc::Version->new($VERSION);
 
 our $PANDOC;
 our $PANDOC_VERSION_SPEC = qr/^(\d+(\.\d+)*)$/;
@@ -59,7 +62,7 @@ sub new {
     croak "pandoc executable not found\n" unless
         $out and $out =~ /^pandoc (\d+(\.\d+)+)/;
 
-    $pandoc->{version} = version->parse("v$1");
+    $pandoc->{version} = Pandoc::Version->new($1);
     $pandoc->{data_dir} = $1 if $out =~ /^Default user data directory: (.+)$/m;
 
     return $pandoc;
@@ -160,7 +163,6 @@ sub require {
     my ($pandoc, $version) = @_;
     $pandoc = do { $PANDOC //= Pandoc->new } if $pandoc eq 'Pandoc'; 
     unless ($pandoc->version($version)) {
-        $version = version->parse($version =~ /^v/ ? $version : "v$version");
         croak "pandoc $version required, only found ".$pandoc->{version}."\n"
     }
     return $pandoc;
@@ -171,13 +173,7 @@ sub version {
     return unless $pandoc and $pandoc->{version};
 
     # compare against given version
-    if (@_) {
-        my $v = shift;
-        $v = "v$v" unless $v =~ /^v/; # force dotted decimal format
-        my $version = eval { version->parse($v) } or
-            croak "Invalid version format: $v";
-        return if $version > $pandoc->{version};
-    }
+    return if @_ and $pandoc->{version} < $_[0];
 
     return $pandoc->{version};
 }
@@ -271,7 +267,7 @@ __END__
   pandoc or die "pandoc executable not found";
 
   # check minimum version
-  pandoc->version(1.12) or die "pandoc >= 1.12 required";
+  pandoc->version > 1.12 or die "pandoc >= 1.12 required";
 
   # access properties
   say pandoc->bin." ".pandoc->version;
@@ -409,11 +405,9 @@ executable was found.
 
 =head2 version( [ $minimum_version ] )
 
-Return the pandoc version as L<version> object. The version number is
-normalized to always start with a small letter "v", for instance "v1.16.0.2" or
-"v1.17".  If a minimum version is passed, the method returns undef if the
-pandoc version is lower. To check whether pandoc is available with a given
-minimal version use one of:
+Return the pandoc version as L<Pandoc::Version> object.  If a minimum version
+is given, the method returns undef if the pandoc version is lower. To check
+whether pandoc is available with a given minimal version use one of:
 
   Pandoc->require( $minimum_version)                # true or die
   pandoc and pandoc->version( $minimum_version )    # true or false
