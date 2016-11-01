@@ -65,6 +65,18 @@ sub new {
     $pandoc->{version} = Pandoc::Version->new($1);
     $pandoc->{data_dir} = $1 if $out =~ /^Default user data directory: (.+)$/m;
 
+	my $LIBRARY_NAME = qr/\pL\w*(?:-\pL\w*)*/;
+	my $LIBRARY_VERSION = qr/\s+($LIBRARY_NAME)\s+(\d+(?:\.\d+)*),?/;
+
+	my %libs;
+	if ( $out =~ /^Compiled with($LIBRARY_VERSION+)/m ) {
+        %libs = $1 =~ /$LIBRARY_VERSION/g;
+        for my $name ( keys %libs ) {
+            $libs{$name} = Pandoc::Version->new( $libs{$name} );
+        }
+	}
+    $pandoc->{libs} = \%libs;
+
     return $pandoc;
 }
 
@@ -247,6 +259,10 @@ sub output_formats {
     $_[0]->_list('output_formats');
 }
 
+sub libs {
+    $_[0]->{libs};
+}
+
 1;
 
 __END__
@@ -287,6 +303,8 @@ __END__
   # access properties
   say pandoc->bin." ".pandoc->version;
   say "Default user data directory: ".pandoc->data_dir;
+  say "Compiled with: ".join(", ", keys %{ pandoc->libs });
+  say pandoc->libs->{'highlighting-kate'};
 
   # create a new instance with default arguments
   my $md2latex = Pandoc->new(qw(-f markdown -t latex --smart));
@@ -416,7 +434,7 @@ requires at least pandoc version 1.12.1 and the Perl module L<Pandoc::Elements>.
 Parse from a file to a L<Pandoc::Document> object. Additional pandoc options
 can be passed, for instance to set input format (markdown by default):
 
-  pandoc->parse_file('example.html', '-f', 'html')
+  pandoc->file('example.html', '-f', 'html')
 
 Requires at least pandoc version 1.12.1 and the Perl module L<Pandoc::Elements>.
 
@@ -472,6 +490,11 @@ Return a list of supported input formats.
 =head2 output_formats
 
 Return a list of supported output formats.
+
+=head2 libs
+
+Return a hash of Haskell libraries compiled into pandoc executable and their
+version numbers as L<Pandoc::Version> objects.
 
 =head1 SEE ALSO
 

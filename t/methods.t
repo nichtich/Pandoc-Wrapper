@@ -3,6 +3,7 @@ use Test::More;
 use Test::Exception;
 use File::Which;
 use Pandoc;
+use Scalar::Util 'reftype';
 
 plan skip_all => 'pandoc executable required' unless pandoc;
 
@@ -96,6 +97,14 @@ plan skip_all => 'pandoc executable required' unless pandoc;
     if (-d $ENV{HOME}.'/.pandoc' and pandoc->version('1.11')) {
         ok( pandoc->data_dir, 'pandoc->data_dir' );
     }
+}
+
+# libs
+{
+    is reftype(pandoc->libs), 'HASH', 'pandoc->libs';
+	if ($ENV{RELEASE_TESTING}) { # don't assume any libraries
+		isa_ok pandoc->libs->{'highlighting-kate'}, 'Pandoc::Version';
+	}
 }
 
 # input_formats / output_formats
