@@ -65,10 +65,8 @@ sub new {
     $pandoc->{version} = Pandoc::Version->new($1);
     $pandoc->{data_dir} = $1 if $out =~ /^Default user data directory: (.+)$/m;
 
-	my $LIBRARY_NAME = qr/\pL\w*(?:-\pL\w*)*/;
-	my $LIBRARY_VERSION = qr/\s+($LIBRARY_NAME)\s+(\d+(?:\.\d+)*),?/;
-
 	my %libs;
+	my $LIBRARY_VERSION = qr/\s+(\pL\w*(?:-\pL\w*)*)\s+(\d+(?:\.\d+)*),?/;
 	if ( $out =~ /^Compiled with($LIBRARY_VERSION+)/m ) {
         %libs = $1 =~ /$LIBRARY_VERSION/g;
         for my $name ( keys %libs ) {
@@ -493,8 +491,8 @@ Return a list of supported output formats.
 
 =head2 libs
 
-Return a hash of Haskell libraries compiled into pandoc executable and their
-version numbers as L<Pandoc::Version> objects.
+Return a hash mapping the names of Haskell libraries compiled into the
+pandoc executable to L<Pandoc::Version> objects.
 
 =head1 SEE ALSO
 
