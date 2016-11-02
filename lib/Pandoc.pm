@@ -7,20 +7,18 @@ use utf8;
 
 =head1 NAME
 
-Pandoc - interface to the Pandoc document converter
+Pandoc - wrapper for the mighty Pandoc document converter
 
 =cut
 
 our $VERSION = '0.4.0';
 
+use Pandoc::Version;
 use Carp 'croak';
 use File::Which;
 use IPC::Run3;
 use parent 'Exporter';
 our @EXPORT = qw(pandoc);
-
-use Pandoc::Version;
-$VERSION = Pandoc::Version->new($VERSION);
 
 our $PANDOC;
 our $PANDOC_VERSION_SPEC = qr/^(\d+(\.\d+)*)$/;
@@ -327,17 +325,19 @@ __END__
 
 =head1 DESCRIPTION
 
-This module provides a Perl interface to John MacFarlane's
-L<Pandoc|http://pandoc.org> document converter. The utility function
-L<pandoc|/pandoc> is exported, unless the module is imported with an empty list
-(C<use Pandoc ();>). Another utility method converts strings between different
-markup formats supported by pandoc (C<< pandoc->convert(...) >>).
+This module provides a Perl wrapper for John MacFarlane's
+L<Pandoc|http://pandoc.org> document converter. 
+
+=head2 IMPORTING
+
+The utility function L<pandoc|/pandoc> is exported, unless the module is
+imported with an empty list (C<use Pandoc ();>).
 
 Importing this module with a version number (e.g. C<use Pandoc 1.13;>) will
 check version number of pandoc executable instead of version number of this
-module (C<$Pandoc::VERSION>). Additional import arguments can be passed to set
-the executable location and default arguments of the global Pandoc instance
-used by function pandoc.
+module (see C<$Pandoc::VERSION> for the latter). Additional import arguments
+can be passed to set the executable location and default arguments of the
+global Pandoc instance used by function pandoc.
 
 =head1 FUNCTIONS
 
@@ -346,7 +346,7 @@ used by function pandoc.
 If called without parameters, this function returns a global instance of class
 Pandoc to execute L<methods|/METHODS>, or C<undef> if no pandoc executable was
 found. The location and/or name of pandoc executable can be set with
-environment variable C<PANDOC_PATH> (set to "pandoc" by default).
+environment variable C<PANDOC_PATH> (set to the string C<pandoc> by default).
 
 =head2 pandoc( ... ) 
 
@@ -418,7 +418,7 @@ C<pandoc --version> is called for every new instance.
 =head2 run( ... )
 
 Execute the pandoc executable with default arguments and optional additional
-arguments and options. See L<<function C<pandoc>|/FUNCTIONS>> for usage.
+arguments and options. See L<function pandoc|/FUNCTIONS> for usage.
 
 =head2 convert( $from => $to, $input [, @arguments ] )
 
@@ -435,11 +435,9 @@ requires at least pandoc version 1.12.1 and the Perl module L<Pandoc::Elements>.
 =head2 file( $filename [, @arguments ] )
 
 Parse from a file to a L<Pandoc::Document> object. Additional pandoc options
-can be passed, for instance to set input format (markdown by default):
-
-  pandoc->file('example.html', '-f', 'html')
-
-Requires at least pandoc version 1.12.1 and the Perl module L<Pandoc::Elements>.
+can be passed, for instance use HTML input format (C<@arguments = qw(-f html)>)
+instead of default markdown. This method Requires at least pandoc version
+1.12.1 and the Perl module L<Pandoc::Elements>.
 
 =head2 require( $minimum_version )
 
@@ -454,7 +452,6 @@ executable was found.
 Return the pandoc version as L<Pandoc::Version> object.  If a minimum version
 is given, the method returns undef if the pandoc version is lower. To check
 whether pandoc is available with a given minimal version use one of:
-
 
 =head2 require( $minimum_version )
 
@@ -501,12 +498,15 @@ version numbers as L<Pandoc::Version> objects.
 
 =head1 SEE ALSO
 
-Use L<Pandoc::Elements> for more elaborate document processing based on Pandoc.
+See L<Pandoc::Elements> for a Perl interface to the abstract syntax tree of
+Pandoc documents for more elaborate document processing.
+
+See L<Pandoc wrappers and interfaces|https://github.com/jgm/pandoc/wiki/Pandoc-wrappers-and-interfaces>
+in the Pandoc GitHub Wiki for a list of wrappers in other programming
+languages.
+
 Other Pandoc related but outdated modules at CPAN include
 L<Orze::Sources::Pandoc> and L<App::PDoc>.
-
-See L<pyandoc|https://pypi.python.org/pypi/pyandoc/> for a similar Pandoc
-wrapper in Python.
 
 =head1 AUTHOR
 
