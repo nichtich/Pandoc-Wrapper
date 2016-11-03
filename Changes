@@ -1,6 +1,9 @@
 Revision history for Pandoc Perl module
 
 {{$NEXT}}
+    - add method highlight_languages
+    - support calling run( $filename, ... )
+    - strip '*' from input/output format names
 
 0.4.0  2016-11-01 20:44:15 CET
     - add Pandoc::Version module for version numbers

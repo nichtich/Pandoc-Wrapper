@@ -1,6 +1,6 @@
 # NAME
 
-Pandoc - interface to the Pandoc document converter
+Pandoc - wrapper for the mighty Pandoc document converter
 
 # STATUS
 
@@ -54,17 +54,19 @@ Pandoc - interface to the Pandoc document converter
 
 # DESCRIPTION
 
-This module provides a Perl interface to John MacFarlane's
-[Pandoc](http://pandoc.org) document converter. The utility function
-[pandoc](#pandoc) is exported, unless the module is imported with an empty list
-(`use Pandoc ();`). Another utility method converts strings between different
-markup formats supported by pandoc (`pandoc->convert(...)`).
+This module provides a Perl wrapper for John MacFarlane's
+[Pandoc](http://pandoc.org) document converter. 
+
+## IMPORTING
+
+The utility function [pandoc](#pandoc) is exported, unless the module is
+imported with an empty list (`use Pandoc ();`).
 
 Importing this module with a version number (e.g. `use Pandoc 1.13;`) will
 check version number of pandoc executable instead of version number of this
-module (`$Pandoc::VERSION`). Additional import arguments can be passed to set
-the executable location and default arguments of the global Pandoc instance
-used by function pandoc.
+module (see `$Pandoc::VERSION` for the latter). Additional import arguments
+can be passed to set the executable location and default arguments of the
+global Pandoc instance used by function pandoc.
 
 # FUNCTIONS
 
@@ -73,7 +75,7 @@ used by function pandoc.
 If called without parameters, this function returns a global instance of class
 Pandoc to execute [methods](#methods), or `undef` if no pandoc executable was
 found. The location and/or name of pandoc executable can be set with
-environment variable `PANDOC_PATH` (set to "pandoc" by default).
+environment variable `PANDOC_PATH` (set to the string `pandoc` by default).
 
 ## pandoc( ... ) 
 
@@ -141,13 +143,17 @@ Repeated use of this constructor with same arguments is not recommended because
 ## run( ... )
 
 Execute the pandoc executable with default arguments and optional additional
-arguments and options. See [<function `pandoc`](#functions)> for usage.
+arguments and options. See [function pandoc](#functions) for usage.
 
 ## convert( $from => $to, $input \[, @arguments \] )
 
 Convert a string in format `$from` to format `$to`. Additional pandoc options
 such as `--smart` and `--standalone` can be passed. The result is returned
-in same utf8 mode (`utf8::is_unicode`) as the input.
+in same utf8 mode (`utf8::is_unicode`) as the input. To convert from file to
+string use method `pandoc`/`run` like this and set input/output format via
+standard pandoc arguments `-f` and `-t`:
+
+    pandoc->run( $filename, @arguments, { out => \$string } );
 
 ## parse( $from => $input \[, @arguments \] )
 
@@ -158,11 +164,9 @@ requires at least pandoc version 1.12.1 and the Perl module [Pandoc::Elements](h
 ## file( $filename \[, @arguments \] )
 
 Parse from a file to a [Pandoc::Document](https://metacpan.org/pod/Pandoc::Document) object. Additional pandoc options
-can be passed, for instance to set input format (markdown by default):
-
-    pandoc->file('example.html', '-f', 'html')
-
-Requires at least pandoc version 1.12.1 and the Perl module [Pandoc::Elements](https://metacpan.org/pod/Pandoc::Elements).
+can be passed, for instance use HTML input format (`@arguments = qw(-f html)`)
+instead of default markdown. This method Requires at least pandoc version
+1.12.1 and the Perl module [Pandoc::Elements](https://metacpan.org/pod/Pandoc::Elements).
 
 ## require( $minimum\_version )
 
@@ -214,19 +218,27 @@ Return a list of supported input formats.
 
 Return a list of supported output formats.
 
+## highlight\_languages
+
+Return a list of programming languages which syntax highlighting is supported
+for (via Haskell library highlighting-kate).
+
 ## libs
 
-Return a hash of Haskell libraries compiled into pandoc executable and their
-version numbers as [Pandoc::Version](https://metacpan.org/pod/Pandoc::Version) objects.
+Return a hash mapping the names of Haskell libraries compiled into the
+pandoc executable to [Pandoc::Version](https://metacpan.org/pod/Pandoc::Version) objects.
 
 # SEE ALSO
 
-Use [Pandoc::Elements](https://metacpan.org/pod/Pandoc::Elements) for more elaborate document processing based on Pandoc.
+See [Pandoc::Elements](https://metacpan.org/pod/Pandoc::Elements) for a Perl interface to the abstract syntax tree of
+Pandoc documents for more elaborate document processing.
+
+See [Pandoc wrappers and interfaces](https://github.com/jgm/pandoc/wiki/Pandoc-wrappers-and-interfaces)
+in the Pandoc GitHub Wiki for a list of wrappers in other programming
+languages.
+
 Other Pandoc related but outdated modules at CPAN include
 [Orze::Sources::Pandoc](https://metacpan.org/pod/Orze::Sources::Pandoc) and [App::PDoc](https://metacpan.org/pod/App::PDoc).
-
-See [pyandoc](https://pypi.python.org/pypi/pyandoc/) for a similar Pandoc
-wrapper in Python.
 
 # AUTHOR
 
