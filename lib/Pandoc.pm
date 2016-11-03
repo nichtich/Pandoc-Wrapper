@@ -241,7 +241,8 @@ sub _list {
             $pandoc->run('--help', { out => \$help });
             for my $inout (qw(Input Output)) {
                 $help =~ /^$inout formats:\s+([a-z_0-9,\+\s*]+)/m or next;
-                $pandoc->{lc($inout).'_formats'} = [ split /,\s+|\s+/, $1 ]
+                $pandoc->{lc($inout).'_formats'} = 
+                    [ split /\*?,\s+|\*?\s+/, $1 ];
             }
             $pandoc->{help} = $help;
         }
