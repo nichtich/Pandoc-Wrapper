@@ -96,7 +96,7 @@ sub run {
     
     if ( @_ ) {
         if ( !$args ) {                                     # @args
-            if ($_[0] =~ /^-/) {
+            if ($_[0] =~ /^-/ or $opts) {
                 $args = \@_;
             } else {                                        # %opts
                 $opts = { @_ };
@@ -423,7 +423,11 @@ arguments and options. See L<function pandoc|/FUNCTIONS> for usage.
 
 Convert a string in format C<$from> to format C<$to>. Additional pandoc options
 such as C<--smart> and C<--standalone> can be passed. The result is returned
-in same utf8 mode (C<utf8::is_unicode>) as the input.
+in same utf8 mode (C<utf8::is_unicode>) as the input. To convert from file to
+string use method C<pandoc>/C<run> like this and set input/output format via
+standard pandoc arguments C<-f> and C<-t>:
+
+  pandoc->run( $filename, @arguments, { out => \$string } );
 
 =head2 parse( $from => $input [, @arguments ] )
 

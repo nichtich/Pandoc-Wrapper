@@ -25,6 +25,8 @@ subtest 'run(@args, \%opts)' => sub {
     like $out, qr!^\s*foo\s*$!, 'stdout';
     note $out;
     is $err //= "", "", 'stderr';
+
+    lives_ok { pandoc->run( 'README.md', \%opts ) }, 'run with filename';
 };
 
 subtest '->run(\@args, \%opts)' => sub {
