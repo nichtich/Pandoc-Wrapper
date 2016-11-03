@@ -7,7 +7,7 @@ use utf8;
 
 =head1 NAME
 
-Pandoc::Version - Pandoc version number
+Pandoc::Version - version number of pandoc and its libraries
 
 =cut
 
@@ -69,36 +69,48 @@ sub TO_JSON {
 
 __END__
 
+=head1 SYNOPSIS
+
+  $version = Pandoc::Version->new("1.17.2");     # create version
+  $version = bless [1,17,2], 'Pandoc::Version';  # equivalent
+
+  "$version";       # stringify to "1.17.2"
+  $version > 1.9;   # compare
+  $version->[0];    # major
+
 =head1 DESCRIPTION
 
-Instances of Pandoc::Version store version number of pandoc executable or other
-libraries to be used with module L<Pandoc>. Each version number is a non-empty
-array reference of non-negative integer values.
+This module is used to store and compare version numbers of pandoc executable
+and Haskell libraries compiled into pandoc. A Pandoc::Version object is an
+array reference of one or more non-negative integer values. In most cases there
+is no need to create such version objects. Just use the instances returned by
+methods C<version> and C<libs> of module L<Pandoc> and trust in in overloading.
 
 =head1 METHODS
 
 =head2 string
 
 Return a string representation of a version, for instance C<"1.17.0.4">. This
-method is automatically called in string context.
+method is automatically called by overloading in string context.
 
 =head2 number
 
 Return a number representation of a version, for instance C<1.017000004>. This
-method is automatically called in number context.
+method is automatically called by overloading in number context.
 
 =head2 cmp
 
-Compare two version numbers. This is method is used to compare version objects
-with operators C<eq>, C<lt>, C<le>, C<ge>, C<==>, C<< < >>, C<< > >>, 
-C<< <= >>, and C<< >= >>.
+Compare two version numbers. This is method is used automatically by
+overloading to compare version objects with strings or numbers (operators
+C<eq>, C<lt>, C<le>, C<ge>, C<==>, C<< < >>, C<< > >>, C<< <= >>, and C<< >=
+>>).
 
 =head2 TO_JSON
 
-Return an array reference of the version number.
+Return an array reference of the version number to serialize in JSON format.
 
 =head1 SEE ALSO
 
-See module L<version>.
+L<version> is a similar module for Perl version numbers.
 
 =cut
