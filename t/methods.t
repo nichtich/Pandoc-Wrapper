@@ -38,7 +38,7 @@ plan skip_all => 'pandoc executable required' unless pandoc;
 
 # bin
 {
-    is pandoc->bin, which('pandoc'), 'default executable';
+    is pandoc->bin, which($ENV{PANDOC_PATH} || 'pandoc'), 'default executable';
     
     # not an full test but part of it
     lives_ok { pandoc->bin( pandoc->bin ) } 'set executable';
@@ -72,7 +72,7 @@ plan skip_all => 'pandoc executable required' unless pandoc;
     is_deeply [$pandoc->arguments], [qw(--smart -t html)], 'arguments';
 
     $pandoc = Pandoc->new(qw(pandoc --smart -t html));
-    is pandoc->bin, which('pandoc'), 'executable and arguments';
+    is $pandoc->bin, which('pandoc'), 'executable and arguments';
     is_deeply [$pandoc->arguments], [qw(--smart -t html)], 'arguments';
 
     my ($in, $out) = ('*...*');
@@ -112,6 +112,14 @@ plan skip_all => 'pandoc executable required' unless pandoc;
     my $want = qr/^(markdown(_github)?|json)$/; 
 	is scalar (grep { $_ =~ $want} pandoc->input_formats), 3, 'input_formats';
 	is scalar (grep { $_ =~ $want} pandoc->output_formats), 3, 'output_formats';
+}
+
+# highlight_languages
+{
+    # we cannot assume that highlighting is enabled but it should not die 
+    if (pandoc->libs->{'highlighting-kate'}) {
+        ok scalar( pandoc->highlight_languages ) > 10, 'highlight_languages';
+    }
 }
 
 done_testing;

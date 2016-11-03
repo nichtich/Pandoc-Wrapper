@@ -65,6 +65,13 @@ sub new {
     $pandoc->{version} = Pandoc::Version->new($1);
     $pandoc->{data_dir} = $1 if $out =~ /^Default user data directory: (.+)$/m;
 
+    # before pandoc supported --list-highlight-languages
+    if ( $out =~ /^Syntax highlighting is supported/m ) {
+        $pandoc->{highlight_languages} = [
+            map { split /\s*,\s*/, $_ } ($out =~ /^    (.+)$/mg)
+        ];
+    }
+
 	my %libs;
 	my $LIBRARY_VERSION = qr/\s+(\pL\w*(?:-\pL\w*)*)\s+(\d+(?:\.\d+)*),?/;
 	if ( $out =~ /^Compiled with($LIBRARY_VERSION+)/m ) {
@@ -247,7 +254,7 @@ sub _list {
             $pandoc->{help} = $help;
         }
     }
-    @{$pandoc->{$which}};
+    @{$pandoc->{$which} // []};
 }
 
 sub input_formats {
@@ -256,6 +263,10 @@ sub input_formats {
 
 sub output_formats {
     $_[0]->_list('output_formats');
+}
+
+sub highlight_languages {
+    $_[0]->_list('highlight_languages');
 }
 
 sub libs {
@@ -493,6 +504,11 @@ Return a list of supported input formats.
 =head2 output_formats
 
 Return a list of supported output formats.
+
+=head2 highlight_languages
+
+Return a list of programming languages which syntax highlighting is supported
+for (via Haskell library highlighting-kate).
 
 =head2 libs
 
