@@ -1,6 +1,7 @@
 Revision history for Pandoc Perl module
 
 {{$NEXT}}
+    - fix test for pandoc 1.9
 
 0.4.1  2016-11-03 21:14:26 CET
     - add method highlight_languages

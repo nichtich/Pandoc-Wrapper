@@ -109,9 +109,9 @@ plan skip_all => 'pandoc executable required' unless pandoc;
 
 # input_formats / output_formats
 {
-    my $want = qr/^(markdown(_github)?|json)$/; 
-	is scalar (grep { $_ =~ $want} pandoc->input_formats), 3, 'input_formats';
-	is scalar (grep { $_ =~ $want} pandoc->output_formats), 3, 'output_formats';
+    my $want = qr/^(markdown|latex|html|json)$/; 
+	is scalar (grep { $_ =~ $want} pandoc->input_formats), 4, 'input_formats';
+	is scalar (grep { $_ =~ $want} pandoc->output_formats), 4, 'output_formats';
 }
 
 # highlight_languages
