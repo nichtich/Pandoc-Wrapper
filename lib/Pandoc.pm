@@ -11,7 +11,7 @@ Pandoc - wrapper for the mighty Pandoc document converter
 
 =cut
 
-our $VERSION = '0.4.2';
+our $VERSION = '0.4.3';
 
 use Pandoc::Version;
 use Carp 'croak';
@@ -60,7 +60,7 @@ sub new {
             { return_if_system_error => 1 };
     }
     croak "pandoc executable not found\n" unless
-        $out and $out =~ /^pandoc (\d+(\.\d+)+)/;
+        $out and $out =~ /^[^ ]+ (\d+(\.\d+)+)/;
 
     $pandoc->{version} = Pandoc::Version->new($1);
     $pandoc->{data_dir} = $1 if $out =~ /^Default user data directory: (.+)$/m;

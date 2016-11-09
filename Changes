@@ -1,6 +1,7 @@
 Revision history for Pandoc Perl module
 
 {{$NEXT}}
+    - fix bug with executable not named 'pandoc'
 
 0.4.2  2016-11-09 19:39:45 CET
     - fix test for pandoc 1.9
