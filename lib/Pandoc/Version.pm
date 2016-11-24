@@ -11,6 +11,8 @@ Pandoc::Version - version number of pandoc and its libraries
 
 =cut
 
+our $VERSION = '0.5.0';
+
 use overload '""' => 'string', '0+' => 'number', 
     cmp => 'cmp', '<=>' => 'cmp', fallback => 1;
 use Carp qw(croak);
