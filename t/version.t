@@ -68,4 +68,11 @@ use Pandoc::Version;
     }
 }
 
+{
+    my $version = Pandoc::Version->new('1.7.3');
+
+    ok($version->match($_), "1.7.3 match $_") for qw(1 1.7 1.7.3 1.7.3.1);
+    ok(!$version->match($_), "1.7.3 no match $_") for qw(1.6 1.8 2);
+}
+
 done_testing;

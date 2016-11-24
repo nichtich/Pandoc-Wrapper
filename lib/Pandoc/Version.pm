@@ -60,6 +60,14 @@ sub cmp {
     return $a->number <=> $b->number;
 }
 
+sub match {
+    my ($a, $b) = map { Pandoc::Version->new($_) } @_;
+    pop @$a while @$a > @$b;
+    pop @$b while @$b > @$a;
+
+    return $a->number == $b->number;
+}
+
 sub TO_JSON {
     my ($self) = @_;
     return [ map { 0+ $_ } @$self ];
@@ -77,14 +85,19 @@ __END__
   "$version";       # stringify to "1.17.2"
   $version > 1.9;   # compare
   $version->[0];    # major
+  $version->[1];    # minor
+
+  $version->match('1.17');   # true for 1.17, 1.17.x, 1.17.x.y...
 
 =head1 DESCRIPTION
 
 This module is used to store and compare version numbers of pandoc executable
 and Haskell libraries compiled into pandoc. A Pandoc::Version object is an
-array reference of one or more non-negative integer values. In most cases there
-is no need to create such version objects. Just use the instances returned by
-methods C<version> and C<libs> of module L<Pandoc> and trust in in overloading.
+array reference of one or more non-negative integer values.
+
+In most cases there is no need to create Pandoc::Version objects by hand. Just
+use the instances returned by methods C<version> and C<libs> of module
+L<Pandoc> and trust in overloading.
 
 =head1 METHODS
 
@@ -105,6 +118,11 @@ overloading to compare version objects with strings or numbers (operators
 C<eq>, C<lt>, C<le>, C<ge>, C<==>, C<< < >>, C<< > >>, C<< <= >>, and C<< >=
 >>).
 
+=head2 match
+
+Return whether a version number matches another version number if cut to the
+same number of parts. For instance C<1.2.3> matches C<1>, C<1.2>, and C<1.2.3>.
+
 =head2 TO_JSON
 
 Return an array reference of the version number to serialize in JSON format.
@@ -112,5 +130,7 @@ Return an array reference of the version number to serialize in JSON format.
 =head1 SEE ALSO
 
 L<version> is a similar module for Perl version numbers.
+
+L<SemVer> extends versions to Semantic Versioning as described at L<http://semver.org/>.
 
 =cut
