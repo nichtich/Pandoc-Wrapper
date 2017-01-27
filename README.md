@@ -55,18 +55,19 @@ Pandoc - wrapper for the mighty Pandoc document converter
 # DESCRIPTION
 
 This module provides a Perl wrapper for John MacFarlane's
-[Pandoc](http://pandoc.org) document converter. 
+[Pandoc](http://pandoc.org) document converter.
 
 ## IMPORTING
 
 The utility function [pandoc](#pandoc) is exported, unless the module is
 imported with an empty list (`use Pandoc ();`).
 
-Importing this module with a version number (e.g. `use Pandoc 1.13;`) will
-check version number of pandoc executable instead of version number of this
-module (see `$Pandoc::VERSION` for the latter). Additional import arguments
-can be passed to set the executable location and default arguments of the
-global Pandoc instance used by function pandoc.
+Importing this module with a version number or a more complex version
+requirenment (e.g. `use Pandoc 1.13;` or `use Pandoc '>= 1.6, !=1.7`)
+will check version number of pandoc executable instead of version number of
+this module (see `$Pandoc::VERSION` for the latter). Additional import
+arguments can be passed to set the executable location and default arguments of
+the global Pandoc instance used by function pandoc.
 
 # FUNCTIONS
 
@@ -77,7 +78,7 @@ Pandoc to execute [methods](#methods), or `undef` if no pandoc executable was
 found. The location and/or name of pandoc executable can be set with
 environment variable `PANDOC_PATH` (set to the string `pandoc` by default).
 
-## pandoc( ... ) 
+## pandoc( ... )
 
 If called with parameters, this functions runs the pandoc executable configured
 at the global instance of class Pandoc (`pandoc->bin`). Arguments are
@@ -114,7 +115,7 @@ the following ways:
 
 - return\_if\_system\_error
 
-    Set to true by default to return the exit code of pandoc executable. 
+    Set to true by default to return the exit code of pandoc executable.
 
 For convenience the `pandoc` function (_after_ checking the `binmode`
 option) checks the contents of any scalar references passed to the
@@ -157,9 +158,17 @@ standard pandoc arguments `-f` and `-t`:
 
 ## parse( $from => $input \[, @arguments \] )
 
-Parse a string in format `$from` to a [Pandoc::Document](https://metacpan.org/pod/Pandoc::Document) object. Additional 
+Parse a string in format `$from` to a [Pandoc::Document](https://metacpan.org/pod/Pandoc::Document) object. Additional
 pandoc options such as `--smart` and `--normalize` can be passed. This method
 requires at least pandoc version 1.12.1 and the Perl module [Pandoc::Elements](https://metacpan.org/pod/Pandoc::Elements).
+
+The reverse action is possible with method `to_pandoc` of [Pandoc::Document](https://metacpan.org/pod/Pandoc::Document).
+Additional shortcut methods such as `to_html` are available:
+
+    $html = pandoc->parse( 'markdown' => '# A *section*' )->to_html;
+
+Method `convert` should be preferred for simple conversions unless you want to
+modify or inspect the parsed document in between.
 
 ## file( $filename \[, @arguments \] )
 
@@ -168,31 +177,19 @@ can be passed, for instance use HTML input format (`@arguments = qw(-f html)`)
 instead of default markdown. This method Requires at least pandoc version
 1.12.1 and the Perl module [Pandoc::Elements](https://metacpan.org/pod/Pandoc::Elements).
 
-## require( $minimum\_version )
+## require( $version\_requirement )
 
-Return the Pandoc instance if its version number is at least as high as the
-given minimum version. Throw an error otherwise.  This method can also be
-called as constructor: `Pandoc->require(...)` is equivalent to `pandoc->require` but throws a more meaningful error message if no pandoc
-executable was found.
+Return the Pandoc instance if its version number fulfills a given version
+requirement. Throw an error otherwise.  Can also be called as constructor:
+`Pandoc->require(...)` is equivalent to `pandoc->require` but
+throws a more meaningful error message if no pandoc executable was found.
 
-## version( \[ $minimum\_version \] )
+## version( \[ $version\_requirement \] )
 
-Return the pandoc version as [Pandoc::Version](https://metacpan.org/pod/Pandoc::Version) object.  If a minimum version
-is given, the method returns undef if the pandoc version is lower. To check
-whether pandoc is available with a given minimal version use one of:
-
-## require( $minimum\_version )
-
-Return the Pandoc instance if its version number is at least as high as the
-given minimum version. Throw an error otherwise.  This method can also be
-called as constructor: `Pandoc->require(...)` is equivalent to `pandoc->require` but throws a more meaningful error message if no pandoc
-executable was found.
-
-## version( \[ $minimum\_version \] )
-
-Return the pandoc version as [Pandoc::Version](https://metacpan.org/pod/Pandoc::Version) object.  If a minimum version
-is given, the method returns undef if the pandoc version is lower. To check
-whether pandoc is available with a given minimal version use one of:
+Return the pandoc version as [Pandoc::Version](https://metacpan.org/pod/Pandoc::Version) object.  If a version
+requirement is given, the method returns undef if the pandoc version does not
+fulfill this requirement.  To check whether pandoc is available with a given
+minimal version use one of:
 
     Pandoc->require( $minimum_version)                # true or die
     pandoc and pandoc->version( $minimum_version )    # true or false
