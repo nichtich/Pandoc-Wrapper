@@ -28,4 +28,9 @@ is_deeply $doc, pandoc->parse( json => $doc->to_json ), 'parse json';
 my $ex = pandoc->file('t/example.md', '--smart');
 is_deeply $ex, $doc, 'parse_file';
 
+if ($Pandoc::Elements::VERSION >= 0.29) {
+    my $html = pandoc->parse( 'markdown' => '# A *section*' )->to_html;
+    ok $html =~ qr{<h1[^>]*>A <em>section</em></h1>}, 'parse->to_html';
+}
+
 done_testing;

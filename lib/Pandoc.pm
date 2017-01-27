@@ -445,6 +445,14 @@ Parse a string in format C<$from> to a L<Pandoc::Document> object. Additional
 pandoc options such as C<--smart> and C<--normalize> can be passed. This method
 requires at least pandoc version 1.12.1 and the Perl module L<Pandoc::Elements>.
 
+The reverse action is possible with method C<to_pandoc> of L<Pandoc::Document>.
+Additional shortcut methods such as C<to_html> are available:
+
+  $html = pandoc->parse( 'markdown' => '# A *section*' )->to_html;
+
+Method C<convert> should be preferred for simple conversions unless you want to
+modify or inspect the parsed document in between.
+
 =head2 file( $filename [, @arguments ] )
 
 Parse from a file to a L<Pandoc::Document> object. Additional pandoc options
