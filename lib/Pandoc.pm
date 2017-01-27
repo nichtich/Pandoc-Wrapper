@@ -26,7 +26,7 @@ our $PANDOC_PATH ||= $ENV{PANDOC_PATH} || 'pandoc';
 sub import {
     shift;
 
-    if (@_ and $_[0] =~ /^[0-9.<>=!, ]+$/) {
+    if (@_ and $_[0] =~ /^[v0-9.<>=!, ]+$/) {
         $PANDOC //= Pandoc->new;
         $PANDOC->require(shift);
     }

@@ -33,7 +33,7 @@ sub new {
             $num = 0+ $num;
             $num 
         } 
-        map { s/^v//i; split /\./ }
+        map { s/^v//i; split /\./ } ## no critic
         map { 'ARRAY' CORE::eq (reftype $_ // "") ? @$_ : $_ }
         map { $_ // '' } @_;
 
@@ -85,7 +85,7 @@ sub fulfills {
 
     my @parts = split qr{\s*,\s*}, $req;
     for my $part (@parts) {
-        my ($op, $ver) = $part =~ m{^\s*(==|>=|>|<=|<|!=)?\s*(\d+(\.\d+)*)$};
+        my ($op, $ver) = $part =~ m{^\s*(==|>=|>|<=|<|!=)?\s*v?(\d+(\.\d+)*)$};
         croak "invalid version requirement: $req" unless defined $ver;
         
         my $cmp = $self->cmp($ver) + 1; # will be 0 for <, 1 for ==, 2 for >
