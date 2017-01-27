@@ -75,4 +75,21 @@ use Pandoc::Version;
     ok(!$version->match($_), "1.7.3 no match $_") for qw(1.6 1.8 2);
 }
 
+{
+    my $version = Pandoc::Version->new('1.7');
+
+    my @yes = qw(1.7 !=1.7.1 >1.6 >=1.7 <1.7.1 <=1.7.1 ==1.7);
+    for (@yes, join ', ', @yes) {
+        ok $version->fulfills($_), "fulfills $_";
+    }
+
+    my @no = qw(1.7,!=1.7 1.7.1 >1.7 >=1.7.1 <1.7 <=1.6 ==1.7.1);
+    for (@no, join(', ', @yes, @no)) {
+        ok !$version->fulfills($_), "!fulfills $_";
+    }
+
+    throws_ok { $version->fulfills('foo') }
+        qr/^invalid version requirement: foo/, 'invalid version requirement';
+}
+
 done_testing;

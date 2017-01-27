@@ -28,7 +28,7 @@ sub new {
     my @nums = 
         map {
             my $num = $_;
-            $num =~ /^[0-9]+$/ or croak 'invalid version number';
+            $num =~ /^\d+$/ or croak 'invalid version number';
             $num =~ s/^0+(?=\d)//; # ensure decimal interpretation
             $num = 0+ $num;
             $num 
@@ -68,6 +68,31 @@ sub match {
     pop @$b while @$b > @$a;
 
     return $a->number == $b->number;
+}
+
+my %cmp_truth_table = (
+    '==' => [0,1,0],
+    '!=' => [1,0,1],
+    '>=' => [0,1,1],
+    '<=' => [1,1,0],
+    '<'  => [1,0,0],
+    '>'  => [0,0,1]
+);
+
+sub fulfills {
+    my ($self, $req) = @_;
+    return 1 unless $req;
+
+    my @parts = split qr{\s*,\s*}, $req;
+    for my $part (@parts) {
+        my ($op, $ver) = $part =~ m{^\s*(==|>=|>|<=|<|!=)?\s*(\d+(\.\d+)*)$};
+        croak "invalid version requirement: $req" unless defined $ver;
+        
+        my $cmp = $self->cmp($ver) + 1; # will be 0 for <, 1 for ==, 2 for >
+        return unless $cmp_truth_table{$op || '>='}->[$cmp];
+    }
+
+    1;
 }
 
 sub TO_JSON {
@@ -113,17 +138,22 @@ method is automatically called by overloading in string context.
 Return a number representation of a version, for instance C<1.017000004>. This
 method is automatically called by overloading in number context.
 
-=head2 cmp
+=head2 cmp( $version )
 
 Compare two version numbers. This is method is used automatically by
 overloading to compare version objects with strings or numbers (operators
 C<eq>, C<lt>, C<le>, C<ge>, C<==>, C<< < >>, C<< > >>, C<< <= >>, and C<< >=
 >>).
 
-=head2 match
+=head2 match( $version )
 
 Return whether a version number matches another version number if cut to the
 same number of parts. For instance C<1.2.3> matches C<1>, C<1.2>, and C<1.2.3>.
+
+=head2 fulfills( $version_requirement )
+
+Return whether a version number fullfills a version requirement, such as
+C<=1.16, !=1.17>'. See L<CPAN::Meta::Spec/Version Ranges> for possible values.
 
 =head2 TO_JSON
 

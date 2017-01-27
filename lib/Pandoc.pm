@@ -21,14 +21,12 @@ use parent 'Exporter';
 our @EXPORT = qw(pandoc);
 
 our $PANDOC;
-our $PANDOC_VERSION_SPEC = qr/^(\d+(\.\d+)*)$/;
-
 our $PANDOC_PATH ||= $ENV{PANDOC_PATH} || 'pandoc';
 
 sub import {
     shift;
 
-    if (@_ and $_[0] =~ /^\d+/) {
+    if (@_ and $_[0] =~ /^[0-9.<>=!, ]+$/) {
         $PANDOC //= Pandoc->new;
         $PANDOC->require(shift);
     }
@@ -100,7 +98,7 @@ sub run {
 
     my $args = 'ARRAY' eq ref $_[0] ? \@{shift @_} : undef; # \@args [ ... ]
     my $opts = 'HASH' eq ref $_[-1] ? \%{pop @_} : undef;   # [ ... ] \%opts
-    
+
     if ( @_ ) {
         if ( !$args ) {                                     # @args
             if ($_[0] =~ /^-/ or $opts) {
@@ -134,7 +132,7 @@ sub run {
     $opts->{return_if_system_error} //= 1;
     $args = [ $pandoc->{bin}, @{$pandoc->{arguments}}, @$args ];
 
-    run3 $args, $opts->{in}, $opts->{out}, $opts->{err}, $opts;    
+    run3 $args, $opts->{in}, $opts->{out}, $opts->{err}, $opts;
 
     return $? == -1 ? -1 : $? >> 8;
 }
@@ -171,7 +169,7 @@ sub parse {
         $pandoc->require('1.12.1');
         $json = $pandoc->convert( $format => 'json', @_ );
     }
-    
+
     require Pandoc::Elements;
     Pandoc::Elements::pandoc_json($json);
 }
@@ -192,22 +190,22 @@ sub file {
 }
 
 sub require {
-    my ($pandoc, $version) = @_;
-    $pandoc = do { $PANDOC //= Pandoc->new } if $pandoc eq 'Pandoc'; 
-    unless ($pandoc->version($version)) {
-        croak "pandoc $version required, only found ".$pandoc->{version}."\n"
+    my $pandoc = shift;
+    $pandoc = do { $PANDOC //= Pandoc->new } if $pandoc eq 'Pandoc';
+    unless ($pandoc->version(@_)) {
+        croak "pandoc $_[0] required, only found ".$pandoc->{version}."\n"
     }
     return $pandoc;
 }
 
 sub version {
-    my $pandoc = shift;
-    return unless $pandoc and $pandoc->{version};
+    my $pandoc = shift or return;
+    my $version = $pandoc->{version} or return;
 
     # compare against given version
-    return if @_ and $pandoc->{version} < $_[0];
+    return if @_ and not $version->fulfills(@_);
 
-    return $pandoc->{version};
+    return $version;
 }
 
 sub data_dir {
@@ -248,7 +246,7 @@ sub _list {
             $pandoc->run('--help', { out => \$help });
             for my $inout (qw(Input Output)) {
                 $help =~ /^$inout formats:\s+([a-z_0-9,\+\s*]+)/m or next;
-                $pandoc->{lc($inout).'_formats'} = 
+                $pandoc->{lc($inout).'_formats'} =
                     [ split /\*?,\s+|\*?\s+/, $1 ];
             }
             $pandoc->{help} = $help;
@@ -336,18 +334,19 @@ __END__
 =head1 DESCRIPTION
 
 This module provides a Perl wrapper for John MacFarlane's
-L<Pandoc|http://pandoc.org> document converter. 
+L<Pandoc|http://pandoc.org> document converter.
 
 =head2 IMPORTING
 
 The utility function L<pandoc|/pandoc> is exported, unless the module is
 imported with an empty list (C<use Pandoc ();>).
 
-Importing this module with a version number (e.g. C<use Pandoc 1.13;>) will
-check version number of pandoc executable instead of version number of this
-module (see C<$Pandoc::VERSION> for the latter). Additional import arguments
-can be passed to set the executable location and default arguments of the
-global Pandoc instance used by function pandoc.
+Importing this module with a version number or a more complex version
+requirenment (e.g. C<use Pandoc 1.13;> or C<< use Pandoc '>= 1.6, !=1.7 >>)
+will check version number of pandoc executable instead of version number of
+this module (see C<$Pandoc::VERSION> for the latter). Additional import
+arguments can be passed to set the executable location and default arguments of
+the global Pandoc instance used by function pandoc.
 
 =head1 FUNCTIONS
 
@@ -358,7 +357,7 @@ Pandoc to execute L<methods|/METHODS>, or C<undef> if no pandoc executable was
 found. The location and/or name of pandoc executable can be set with
 environment variable C<PANDOC_PATH> (set to the string C<pandoc> by default).
 
-=head2 pandoc( ... ) 
+=head2 pandoc( ... )
 
 If called with parameters, this functions runs the pandoc executable configured
 at the global instance of class Pandoc (C<< pandoc->bin >>). Arguments are
@@ -397,7 +396,7 @@ is undefined will be set to this value.
 
 =item return_if_system_error
 
-Set to true by default to return the exit code of pandoc executable. 
+Set to true by default to return the exit code of pandoc executable.
 
 =back
 
@@ -442,7 +441,7 @@ standard pandoc arguments C<-f> and C<-t>:
 
 =head2 parse( $from => $input [, @arguments ] )
 
-Parse a string in format C<$from> to a L<Pandoc::Document> object. Additional 
+Parse a string in format C<$from> to a L<Pandoc::Document> object. Additional
 pandoc options such as C<--smart> and C<--normalize> can be passed. This method
 requires at least pandoc version 1.12.1 and the Perl module L<Pandoc::Elements>.
 
@@ -453,33 +452,19 @@ can be passed, for instance use HTML input format (C<@arguments = qw(-f html)>)
 instead of default markdown. This method Requires at least pandoc version
 1.12.1 and the Perl module L<Pandoc::Elements>.
 
-=head2 require( $minimum_version )
+=head2 require( $version_requirement )
 
-Return the Pandoc instance if its version number is at least as high as the
-given minimum version. Throw an error otherwise.  This method can also be
-called as constructor: C<< Pandoc->require(...) >> is equivalent to C<<
-pandoc->require >> but throws a more meaningful error message if no pandoc
-executable was found.
+Return the Pandoc instance if its version number fulfills a given version
+requirement. Throw an error otherwise.  Can also be called as constructor:
+C<< Pandoc->require(...) >> is equivalent to C<< pandoc->require >> but
+throws a more meaningful error message if no pandoc executable was found.
 
-=head2 version( [ $minimum_version ] )
+=head2 version( [ $version_requirement ] )
 
-Return the pandoc version as L<Pandoc::Version> object.  If a minimum version
-is given, the method returns undef if the pandoc version is lower. To check
-whether pandoc is available with a given minimal version use one of:
-
-=head2 require( $minimum_version )
-
-Return the Pandoc instance if its version number is at least as high as the
-given minimum version. Throw an error otherwise.  This method can also be
-called as constructor: C<< Pandoc->require(...) >> is equivalent to C<<
-pandoc->require >> but throws a more meaningful error message if no pandoc
-executable was found.
-
-=head2 version( [ $minimum_version ] )
-
-Return the pandoc version as L<Pandoc::Version> object.  If a minimum version
-is given, the method returns undef if the pandoc version is lower. To check
-whether pandoc is available with a given minimal version use one of:
+Return the pandoc version as L<Pandoc::Version> object.  If a version
+requirement is given, the method returns undef if the pandoc version does not
+fulfill this requirement.  To check whether pandoc is available with a given
+minimal version use one of:
 
   Pandoc->require( $minimum_version)                # true or die
   pandoc and pandoc->version( $minimum_version )    # true or false
