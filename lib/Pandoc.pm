@@ -148,7 +148,8 @@ sub convert {
     my $utf8 = utf8::is_utf8($in);
 
     my %opts = (in => \$in, out => \$out, err => \$err);
-    my $status = $pandoc->run( [ '-f' => $from, '-t' => $to, @_ ], \%opts );
+    my @args = (@_, '-f' => $from, '-t' => $to, '-o' => '-');
+    my $status = $pandoc->run( \@args, \%opts );
 
     croak($err || "pandoc failed with exit code $status") if $status;
 
@@ -179,7 +180,7 @@ sub file {
     $pandoc->require('1.12.1');
 
     my ($json, $err);
-    my @args = ('-t' => 'json', @_);
+    my @args = (@_, '-t' => 'json', '-o' => '-');
     my $status = $pandoc->run( \@args, out => \$json, err => \$err );
     croak($err || "pandoc failed with exit code $status") if $status;
 

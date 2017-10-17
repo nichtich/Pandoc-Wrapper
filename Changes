@@ -1,6 +1,7 @@
 Revision history for Pandoc Perl module
 
 {{$NEXT}}
+    - make sure to override existing options and output destination (#16)
 
 0.6.0  2017-01-27 10:51:10 CET
     - support more expressive version requirements
