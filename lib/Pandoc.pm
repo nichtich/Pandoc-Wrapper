@@ -331,6 +331,7 @@ __END__
   # utility methods to parse abstract syntax tree (requires Pandoc::Elements)
   $doc = pandoc->parse( markdown => '*hello* **world!**' );
   $doc = pandoc->file( 'example.md' );
+  $doc = pandoc->file;  # read Markdown from STDIN
 
 =head1 DESCRIPTION
 
@@ -454,12 +455,12 @@ Additional shortcut methods such as C<to_html> are available:
 Method C<convert> should be preferred for simple conversions unless you want to
 modify or inspect the parsed document in between.
 
-=head2 file( $filename [, @arguments ] )
+=head2 file( [ $filename [, @arguments ] ] )
 
-Parse from a file to a L<Pandoc::Document> object. Additional pandoc options
-can be passed, for instance use HTML input format (C<@arguments = qw(-f html)>)
-instead of default markdown. This method Requires at least pandoc version
-1.12.1 and the Perl module L<Pandoc::Elements>.
+Parse from a file (or STDIN) to a L<Pandoc::Document> object. Additional pandoc
+options can be passed, for instance use HTML input format (C<@arguments = qw(-f
+html)>) instead of default markdown. This method requires at least pandoc
+version 1.12.1 and the Perl module L<Pandoc::Elements>.
 
 =head2 require( $version_requirement )
 

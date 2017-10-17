@@ -64,6 +64,7 @@
    "version" : "0.6.0",
    "x_contributors" : [
       "Benct Philip Jonsson <bpjonsson@gmail.com>",
+      "Edward Betts <edward@4angle.com>",
       "Jakob Voß <jakob.voss@gbv.de>"
    ]
 }

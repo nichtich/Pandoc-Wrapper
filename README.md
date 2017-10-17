@@ -51,6 +51,7 @@ Pandoc - wrapper for the mighty Pandoc document converter
     # utility methods to parse abstract syntax tree (requires Pandoc::Elements)
     $doc = pandoc->parse( markdown => '*hello* **world!**' );
     $doc = pandoc->file( 'example.md' );
+    $doc = pandoc->file;  # read Markdown from STDIN
 
 # DESCRIPTION
 
@@ -170,12 +171,12 @@ Additional shortcut methods such as `to_html` are available:
 Method `convert` should be preferred for simple conversions unless you want to
 modify or inspect the parsed document in between.
 
-## file( $filename \[, @arguments \] )
+## file( \[ $filename \[, @arguments \] \] )
 
-Parse from a file to a [Pandoc::Document](https://metacpan.org/pod/Pandoc::Document) object. Additional pandoc options
-can be passed, for instance use HTML input format (`@arguments = qw(-f html)`)
-instead of default markdown. This method Requires at least pandoc version
-1.12.1 and the Perl module [Pandoc::Elements](https://metacpan.org/pod/Pandoc::Elements).
+Parse from a file (or STDIN) to a [Pandoc::Document](https://metacpan.org/pod/Pandoc::Document) object. Additional pandoc
+options can be passed, for instance use HTML input format (`@arguments = qw(-f
+html)`) instead of default markdown. This method requires at least pandoc
+version 1.12.1 and the Perl module [Pandoc::Elements](https://metacpan.org/pod/Pandoc::Elements).
 
 ## require( $version\_requirement )
 
