@@ -101,7 +101,7 @@ sub run {
 
     if ( @_ ) {
         if ( !$args ) {                                     # @args
-            if ($_[0] =~ /^-/ or $opts) {
+            if ($_[0] =~ /^-/ or $opts or @_ % 2) {
                 $args = \@_;
             } else {                                        # %opts
                 $opts = { @_ };

@@ -1,6 +1,7 @@
 Revision history for Pandoc Perl module
 
 {{$NEXT}}
+    - fix bug when calling with uneven number of arguments (#22)
 
 0.6.1  2017-10-17 20:43:51 CEST
     - make sure to override existing options and output destination (#16)
