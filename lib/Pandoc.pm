@@ -519,6 +519,9 @@ See L<Pandoc wrappers and interfaces|https://github.com/jgm/pandoc/wiki/Pandoc-w
 in the Pandoc GitHub Wiki for a list of wrappers in other programming
 languages.
 
+Use L<Pandoc::Release> to get information about and download pandoc releases,
+(for instance to test against multiple pandoc versions).
+
 Other Pandoc related but outdated modules at CPAN include
 L<Orze::Sources::Pandoc> and L<App::PDoc>.
 
