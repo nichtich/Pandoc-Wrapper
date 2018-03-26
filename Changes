@@ -1,6 +1,8 @@
 Revision history for Pandoc Perl module
 
 {{$NEXT}}
+
+0.7.0  2018-03-26 22:31:51 CEST
     - Add Pandoc::Release
     - fix bug when calling with uneven number of arguments (#22)
 
