@@ -4,4 +4,6 @@
 /Build
 MYMETA.*
 /.prove
-pandoc/
+xt/deb
+xt/bin
+blib
