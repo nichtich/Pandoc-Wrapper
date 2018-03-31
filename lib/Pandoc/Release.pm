@@ -4,8 +4,8 @@ use warnings;
 use 5.010;
 
 # core modules since 5.014
-require HTTP::Tiny;
-require JSON::PP;
+use HTTP::Tiny;
+use JSON::PP;
 
 use Pandoc;
 use Pandoc::Version;

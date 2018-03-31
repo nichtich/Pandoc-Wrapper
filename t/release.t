@@ -1,10 +1,11 @@
 use strict;
 use Test::More;
 use File::Temp;
-use Pandoc::Release;
 
 plan skip_all => 'these tests are for release candidate testing'
     unless $ENV{RELEASE_TESTING};
+
+require Pandoc::Release;
 
 my @releases = Pandoc::Release->list( since => '2.1' );
 like $releases[0]->{name}, qr/^pandoc/i, 'fetch releases';
