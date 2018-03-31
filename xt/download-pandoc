@@ -1,0 +1,23 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+use Pandoc::Release;
+
+my $range = (join ',', @ARGV) || 0;
+
+foreach( Pandoc::Release->list(range => $range, verbose => 1) ) {
+    $_->download(
+        arch => 'amd64', dir => 'xt/deb', verbose => 1, bin => 'xt/bin'
+    );
+}
+
+=head1 DESCRIPTION
+
+This script can be used to download binary executables of Pandoc. For instance
+to download a specific release:
+
+  ./xt/download-pandoc ==2.1.0
+
+Debian packages are put into C<xt/deb/> and Pandoc executables into C<xt/bin/>.
+
+=cut

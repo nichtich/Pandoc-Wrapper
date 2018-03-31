@@ -153,7 +153,7 @@ same number of parts. For instance C<1.2.3> matches C<1>, C<1.2>, and C<1.2.3>.
 =head2 fulfills( $version_requirement )
 
 Return whether a version number fullfills a version requirement, such as
-C<=1.16, !=1.17>'. See L<CPAN::Meta::Spec/Version Ranges> for possible values.
+C<!=1.16, <=1.17>. See L<CPAN::Meta::Spec/Version Ranges> for possible values.
 
 =head2 TO_JSON
 

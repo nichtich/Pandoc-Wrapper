@@ -22,7 +22,9 @@ Pandoc::Release - information about pandoc releases from GitHub
 our $VERSION = '0.7.0';
 
 sub list {
-	my ($class, %opts) = @_;
+    my ($class, %opts) = @_;
+
+    my $range = $opts{range};
     my $since = Pandoc::Version->new($opts{since} // 0);
 	my $client = HTTP::Tiny->new();
     my $url = "https://api.github.com/repos/jgm/pandoc/releases";
@@ -33,8 +35,12 @@ sub list {
         my $res = $client->get($url);
         $res->{success} or die "failed to fetch $url";
         foreach (@{ JSON::PP::decode_json($res->{content}) }) {
-            last LOOP unless $since < $_->{tag_name};
-            push @releases, bless $_, $class;
+            my $version = Pandoc::Version->new($_->{tag_name});
+            last LOOP unless $since < $version; # abort if possible
+            if (!$range || $version->fulfills($range)) {
+                push @releases, bless $_, $class;
+                last LOOP if $range and $range =~ /^==v?(\d+(\.\d)*)$/;
+            }
         }
 
         my $link = $res->{headers}{link} // '';
@@ -104,10 +110,12 @@ It requires at least Perl 5.14 or L<HTTP::Tiny> and L<JSON::PP> installed.
 
 =head1 FUNCTIONS
 
-=head2 list( [ since => $version ] [, verbose => 0|1 ] )
+=head2 list( [ since => $version ] [ range => $range ] [, verbose => 0|1 ] )
 
-Get a list of all releases, optionally since a given pandoc version. Option
-C<verbose> will print URLs before each request.
+Get a list of all pandoc releases at GitHub, optionally since some version and
+within a version range such as C<!=1.16, <=1.17> or C<==2.1.2>. See
+L<CPAN::Meta::Spec/Version Ranges> for possible values. Option C<verbose> will
+print URLs before each request.
 
 =head1 METHODS
 

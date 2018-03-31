@@ -14,4 +14,8 @@ note $_ for map { $_->{tag_name} } @releases;
 @releases = Pandoc::Release->list( since => '9.0' );
 is_deeply \@releases , [], 'no > 9.0 releases';
 
+my @releases = Pandoc::Release->list( range => '<=2.0.1, >1.19.2' );
+is_deeply [ map {$_->{tag_name}} @releases ],
+    [qw(2.0.1 2.0.0.1 2.0 1.19.2.1)], 'range releases';
+
 done_testing;

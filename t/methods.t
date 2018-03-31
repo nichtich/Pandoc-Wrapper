@@ -102,9 +102,9 @@ plan skip_all => 'pandoc executable required' unless pandoc;
 # libs
 {
     is reftype(pandoc->libs), 'HASH', 'pandoc->libs';
-	if ($ENV{RELEASE_TESTING}) { # don't assume any libraries
-		isa_ok pandoc->libs->{'pandoc-types'}, 'Pandoc::Version';
-	}
+    #if ($ENV{RELEASE_TESTING}) { # don't assume any libraries
+    #	isa_ok pandoc->libs->{'highlighting-kate'}, 'Pandoc::Version';
+    #}
 }
 
 # input_formats / output_formats
