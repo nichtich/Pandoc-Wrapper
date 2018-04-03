@@ -316,13 +316,13 @@ __END__
   say pandoc->libs->{'highlighting-kate'};
 
   # create a new instance with default arguments
-  my $md2latex = Pandoc->new(qw(-f markdown -t latex --smart));
+  my $md2latex = Pandoc->new(qw(-f markdown -t latex --number-sections));
   $md2latex->run({ in => \$markdown, out => \$latex });
 
   # set default arguments on compile time
   use Pandoc qw(-t latex);
-  use Pandoc qw(/usr/bin/pandoc --smart);
-  use Pandoc qw(1.16 --smart);
+  use Pandoc qw(/usr/bin/pandoc --number-sections);
+  use Pandoc qw(1.16 --number-sections);
 
 
   # utility method to convert from string
@@ -434,7 +434,7 @@ arguments and options. See L<function pandoc|/FUNCTIONS> for usage.
 =head2 convert( $from => $to, $input [, @arguments ] )
 
 Convert a string in format C<$from> to format C<$to>. Additional pandoc options
-such as C<--smart> and C<--standalone> can be passed. The result is returned
+such as C<-N> and C<--standalone> can be passed. The result is returned
 in same utf8 mode (C<utf8::is_unicode>) as the input. To convert from file to
 string use method C<pandoc>/C<run> like this and set input/output format via
 standard pandoc arguments C<-f> and C<-t>:
@@ -444,7 +444,7 @@ standard pandoc arguments C<-f> and C<-t>:
 =head2 parse( $from => $input [, @arguments ] )
 
 Parse a string in format C<$from> to a L<Pandoc::Document> object. Additional
-pandoc options such as C<--smart> and C<--normalize> can be passed. This method
+pandoc options such as C<-N> and C<--normalize> can be passed. This method
 requires at least pandoc version 1.12.1 and the Perl module L<Pandoc::Elements>.
 
 The reverse action is possible with method C<to_pandoc> of L<Pandoc::Document>.
