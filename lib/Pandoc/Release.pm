@@ -15,7 +15,7 @@ use File::Copy 'move';
 
 =head1 NAME
 
-Pandoc::Release - information about pandoc releases from GitHub
+Pandoc::Release - get pandoc releases from GitHub
 
 =cut
 
@@ -63,7 +63,7 @@ sub download {
 	-d $dir or die "missing directory $dir";
     if ($bin) {
         make_path($bin);
-		-d $bin or die "missing directory $bin"; 
+		-d $bin or die "missing directory $bin";
     }
 
     my ($asset) = grep { $_->{name} =~ /-$arch\.deb$/ } @{$self->{assets}};
@@ -108,7 +108,7 @@ __END__
 This utility module fetches information about pandoc releases via GitHub API.
 It requires at least Perl 5.14 or L<HTTP::Tiny> and L<JSON::PP> installed.
 
-=head1 FUNCTIONS
+=head1 METHODS
 
 =head2 list( [ since => $version ] [ range => $range ] [, verbose => 0|1 ] )
 
@@ -117,18 +117,15 @@ within a version range such as C<!=1.16, <=1.17> or C<==2.1.2>. See
 L<CPAN::Meta::Spec/Version Ranges> for possible values. Option C<verbose> will
 print URLs before each request.
 
-=head1 METHODS
-
 =head2 download( arch => $arch, dir => $dir [, bin => $bin] [, verbose => 0|1] )
 
 Download the Debian release file for some architecture (e.g. C<amd64>) to
-directory C<dir>, unless already there. Optionally extract pandoc binary to
-C<bin> directory named after version number (e.g. C<bin/2.1.2>). The binary can
-then be wrapped as instance of L<Pandoc>:
+directory C<dir>, unless already there. Optionally extract pandoc executables
+to directory C<bin>, each named by pandoc version number (e.g. C<2.1.2>).
+These executables can be used with constructor of L<Pandoc> and with
+L<App::Prove::Plugin::andoc>:
 
-  my $pandoc = Pandoc->new("$dir/$version");
-
-Returns the version number as L<Pandoc::Version> on success.
+  my $pandoc = Pandoc->new("$bin/$version");
 
 =head1 SEE ALSO
 

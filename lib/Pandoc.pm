@@ -512,15 +512,16 @@ pandoc executable to L<Pandoc::Version> objects.
 
 =head1 SEE ALSO
 
+This package includes L<Pandoc::Version> to compare Pandoc version numbers,
+L<Pandoc::Release> to get Pandoc releases from GitHub, and
+L<App::Prove::Plugin::andoc> to run tests with selected Pandoc executables.
+
 See L<Pandoc::Elements> for a Perl interface to the abstract syntax tree of
 Pandoc documents for more elaborate document processing.
 
 See L<Pandoc wrappers and interfaces|https://github.com/jgm/pandoc/wiki/Pandoc-wrappers-and-interfaces>
 in the Pandoc GitHub Wiki for a list of wrappers in other programming
 languages.
-
-Use L<Pandoc::Release> to get information about and download pandoc releases,
-(for instance to test against multiple pandoc versions).
 
 Other Pandoc related but outdated modules at CPAN include
 L<Orze::Sources::Pandoc> and L<App::PDoc>.
