@@ -36,13 +36,13 @@ Pandoc - wrapper for the mighty Pandoc document converter
     say pandoc->libs->{'highlighting-kate'};
 
     # create a new instance with default arguments
-    my $md2latex = Pandoc->new(qw(-f markdown -t latex --smart));
+    my $md2latex = Pandoc->new(qw(-f markdown -t latex --number-sections));
     $md2latex->run({ in => \$markdown, out => \$latex });
 
     # set default arguments on compile time
     use Pandoc qw(-t latex);
-    use Pandoc qw(/usr/bin/pandoc --smart);
-    use Pandoc qw(1.16 --smart);
+    use Pandoc qw(/usr/bin/pandoc --number-sections);
+    use Pandoc qw(1.16 --number-sections);
 
 
     # utility method to convert from string
@@ -150,7 +150,7 @@ arguments and options. See [function pandoc](#functions) for usage.
 ## convert( $from => $to, $input \[, @arguments \] )
 
 Convert a string in format `$from` to format `$to`. Additional pandoc options
-such as `--smart` and `--standalone` can be passed. The result is returned
+such as `-N` and `--standalone` can be passed. The result is returned
 in same utf8 mode (`utf8::is_unicode`) as the input. To convert from file to
 string use method `pandoc`/`run` like this and set input/output format via
 standard pandoc arguments `-f` and `-t`:
@@ -160,7 +160,7 @@ standard pandoc arguments `-f` and `-t`:
 ## parse( $from => $input \[, @arguments \] )
 
 Parse a string in format `$from` to a [Pandoc::Document](https://metacpan.org/pod/Pandoc::Document) object. Additional
-pandoc options such as `--smart` and `--normalize` can be passed. This method
+pandoc options such as `-N` and `--normalize` can be passed. This method
 requires at least pandoc version 1.12.1 and the Perl module [Pandoc::Elements](https://metacpan.org/pod/Pandoc::Elements).
 
 The reverse action is possible with method `to_pandoc` of [Pandoc::Document](https://metacpan.org/pod/Pandoc::Document).
@@ -228,15 +228,16 @@ pandoc executable to [Pandoc::Version](https://metacpan.org/pod/Pandoc::Version)
 
 # SEE ALSO
 
+This package includes [Pandoc::Version](https://metacpan.org/pod/Pandoc::Version) to compare Pandoc version numbers,
+[Pandoc::Release](https://metacpan.org/pod/Pandoc::Release) to get Pandoc releases from GitHub, and
+[App::Prove::Plugin::andoc](https://metacpan.org/pod/App::Prove::Plugin::andoc) to run tests with selected Pandoc executables.
+
 See [Pandoc::Elements](https://metacpan.org/pod/Pandoc::Elements) for a Perl interface to the abstract syntax tree of
 Pandoc documents for more elaborate document processing.
 
 See [Pandoc wrappers and interfaces](https://github.com/jgm/pandoc/wiki/Pandoc-wrappers-and-interfaces)
 in the Pandoc GitHub Wiki for a list of wrappers in other programming
 languages.
-
-Use [Pandoc::Release](https://metacpan.org/pod/Pandoc::Release) to get information about and download pandoc releases,
-(for instance to test against multiple pandoc versions).
 
 Other Pandoc related but outdated modules at CPAN include
 [Orze::Sources::Pandoc](https://metacpan.org/pod/Orze::Sources::Pandoc) and [App::PDoc](https://metacpan.org/pod/App::PDoc).

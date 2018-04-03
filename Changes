@@ -1,6 +1,8 @@
 Revision history for Pandoc Perl module
 
 {{$NEXT}}
+
+0.7.1  2018-04-03 11:09:14 CEST
     - Add App::Prove::Plugin::andoc
     - Make sure tests pass on all pandoc versions (#25)
 
