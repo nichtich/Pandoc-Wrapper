@@ -83,7 +83,7 @@ plan skip_all => 'pandoc executable required' unless pandoc;
         'use default arguments';
 
     is $pandoc->run( '-t' => 'latex', { in => \$in, out => \$out }), 0, 'run';
-    like $out, qr{\\section{x}\\label{x}},
+    like $out, qr{\\section\{x\}\\label\{x\}},
         'override default arguments';
 
     throws_ok { $pandoc->arguments(1) }
