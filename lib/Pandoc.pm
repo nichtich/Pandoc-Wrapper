@@ -11,7 +11,7 @@ Pandoc - wrapper for the mighty Pandoc document converter
 
 =cut
 
-our $VERSION = '0.7.0';
+our $VERSION = '0.7.1';
 
 use Pandoc::Version;
 use Carp 'croak';

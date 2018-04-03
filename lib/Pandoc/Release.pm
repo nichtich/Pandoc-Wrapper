@@ -19,7 +19,7 @@ Pandoc::Release - get pandoc releases from GitHub
 
 =cut
 
-our $VERSION = '0.7.0';
+our $VERSION = '0.7.1';
 
 sub list {
     my ($class, %opts) = @_;
