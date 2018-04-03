@@ -235,6 +235,9 @@ This package includes [Pandoc::Version](https://metacpan.org/pod/Pandoc::Version
 See [Pandoc::Elements](https://metacpan.org/pod/Pandoc::Elements) for a Perl interface to the abstract syntax tree of
 Pandoc documents for more elaborate document processing.
 
+See [Pod::Pandoc](https://metacpan.org/pod/Pod::Pandoc) to parse Plain Old Documentation format ([perlpod](https://metacpan.org/pod/perlpod)) for
+processing with Pandoc.
+
 See [Pandoc wrappers and interfaces](https://github.com/jgm/pandoc/wiki/Pandoc-wrappers-and-interfaces)
 in the Pandoc GitHub Wiki for a list of wrappers in other programming
 languages.

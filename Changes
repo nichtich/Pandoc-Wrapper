@@ -1,6 +1,7 @@
 Revision history for Pandoc Perl module
 
 {{$NEXT}}
+    - Fix test failure since Perl 5.26
 
 0.7.1  2018-04-03 11:09:14 CEST
     - Add App::Prove::Plugin::andoc
