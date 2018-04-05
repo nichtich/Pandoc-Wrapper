@@ -12,6 +12,7 @@ use Pandoc::Version;
 use Cwd;
 use File::Path qw(make_path remove_tree);
 use File::Copy 'move';
+use File::Temp 'tempdir';
 
 =head1 NAME
 
@@ -36,7 +37,8 @@ sub _api_request {
 
 sub get {
     my ($class, $version, %opts) = @_;
-    bless _github_api("releases/tags/$version", %opts)->{content}, $class;
+    my $url = "https://api.github.com/repos/jgm/pandoc/releases/tags/$version";
+    bless _api_request($url, %opts)->{content}, $class;
 }
 
 sub list {
@@ -54,7 +56,6 @@ sub list {
             last LOOP unless $since < $version; # abort if possible
             if (!$range || $version->fulfills($range)) {
                 push @releases, bless $_, $class;
-                last LOOP if $range and $range =~ /^==v?(\d+(\.\d)*)$/;
             }
         }
 
@@ -69,8 +70,9 @@ sub list {
 sub download {
     my ($self, %opts) = @_;
 
-    my $dir = $opts{dir} // die 'directory not specified';
-    my $arch = $opts{arch} // die 'architecture not specified';
+    my $dir = $opts{dir} // tempdir(CLEANUP => 1);
+    my $arch = $opts{arch} // `dpkg --print-architecture`;
+    chomp $arch;
     my $bin = $opts{bin};
 
     make_path($dir);
@@ -81,9 +83,13 @@ sub download {
     }
 
     my ($asset) = grep { $_->{name} =~ /-$arch\.deb$/ } @{$self->{assets}};
-    return if !$asset or $asset->{name} =~ /^pandoc-1\.17-/; # version had a bug
 
-    my $url = $asset->{browser_download_url} or return;
+    my $url = ($asset // {})->{browser_download_url} or do {
+        say "release $self->{tag_name} contains no $arch Debian package"
+            if $opts{verbose};
+        return;
+    };
+
     my $version = Pandoc::Version->new($self->{tag_name});
     my $deb = "$dir/".$asset->{name};
     say $deb if $CLIENT->mirror($url, $deb)->{success} and $opts{verbose};
@@ -94,9 +100,11 @@ sub download {
                 . "&& chmod +x '$bin/$version'";
         system($cmd) and die "failed to extract pandoc from $deb:\n $cmd";
         say "$bin/$version" if $opts{verbose};
-    }
 
-    return $version;
+        return Pandoc->new("$bin/$version");
+    } else {
+        return $version;
+    }
 }
 
 1;
@@ -118,8 +126,11 @@ __END__
       say $release->{tag_name};
 
       # download Debian package and executable
-      $release->download(arch => 'amd64', dir => './deb', bin => './bin');
+      $release->download(dir => './deb', bin => './bin');
   }
+
+  # download executable and use as temporary Pandoc object:
+  my $pandoc = Pandoc::Release->get('2.1.3)->download(bin => './bin');
 
 =head1 DESCRIPTION
 
@@ -134,22 +145,21 @@ Get a specific release by its version or die if the given version does not
 exist. Returns data as returned by GitHub releases API:
 L<https://developer.github.com/v3/repos/releases/#get-a-release-by-tag-name>.
 
-=head2 list( [ since => $version ] [ range => $range ] [, verbose => 0|1 ] )
+=head2 list( [ since => $version ] [ range => $range ] [ verbose => 0|1 ] )
 
 Get a list of all pandoc releases at GitHub, optionally since some version and
 within a version range such as C<!=1.16, <=1.17> or C<==2.1.2>. See
 L<CPAN::Meta::Spec/Version Ranges> for possible values. Option C<verbose> will
 print URLs before each request.
 
-=head2 download( arch => $arch, dir => $dir [, bin => $bin] [, verbose => 0|1] )
+=head2 download( [ dir => $dir ] [ arch => $arch ] [ bin => $bin ] [ verbose => 0|1] )
 
 Download the Debian release file for some architecture (e.g. C<amd64>) to
-directory C<dir>, unless already there. Optionally extract pandoc executables
-to directory C<bin>, each named by pandoc version number (e.g. C<2.1.2>).
-These executables can be used with constructor of L<Pandoc> and with
-L<App::Prove::Plugin::andoc>:
-
-  my $pandoc = Pandoc->new("$bin/$version");
+directory C<dir>, unless already there. By default architecture is determined
+via calling C<dpkg> and download directory is a newly created temporary
+directory.  Optionally extract pandoc executables to directory C<bin>, each
+named by pandoc version number (e.g. C<2.1.2>).  Returns a L<Pandoc> instance
+if C<bin> is given or L<Pandoc::Version> otherwise.
 
 =head1 SEE ALSO
 
