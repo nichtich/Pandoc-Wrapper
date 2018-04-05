@@ -20,21 +20,36 @@ Pandoc::Release - get pandoc releases from GitHub
 =cut
 
 our $VERSION = '0.7.1';
+our $CLIENT = HTTP::Tiny->new;
+
+sub _api_request {
+    my ($url, %opts) = @_;
+
+    say $url if $opts{verbose};
+    my $res = $CLIENT->get($url);
+
+    $res->{success} or die "failed to fetch $url";
+    $res->{content} = JSON::PP::decode_json($res->{content});
+
+    $res;
+}
+
+sub get {
+    my ($class, $version, %opts) = @_;
+    bless _github_api("releases/tags/$version", %opts)->{content}, $class;
+}
 
 sub list {
     my ($class, %opts) = @_;
 
     my $range = $opts{range};
     my $since = Pandoc::Version->new($opts{since} // 0);
-	my $client = HTTP::Tiny->new();
     my $url = "https://api.github.com/repos/jgm/pandoc/releases";
     my @releases;
 
     LOOP: while ($url) {
-        say $url if $opts{verbose};
-        my $res = $client->get($url);
-        $res->{success} or die "failed to fetch $url";
-        foreach (@{ JSON::PP::decode_json($res->{content}) }) {
+        my $res = _api_request($url, %opts);
+        foreach (@{ $res->{content} }) {
             my $version = Pandoc::Version->new($_->{tag_name});
             last LOOP unless $since < $version; # abort if possible
             if (!$range || $version->fulfills($range)) {
@@ -54,16 +69,15 @@ sub list {
 sub download {
     my ($self, %opts) = @_;
 
-	my $dir = $opts{dir} // die 'directory not specified';
-	my $arch = $opts{arch} // die 'architecture not specified';
+    my $dir = $opts{dir} // die 'directory not specified';
+    my $arch = $opts{arch} // die 'architecture not specified';
     my $bin = $opts{bin};
-	my $client = HTTP::Tiny->new;
 
     make_path($dir);
-	-d $dir or die "missing directory $dir";
+    -d $dir or die "missing directory $dir";
     if ($bin) {
         make_path($bin);
-		-d $bin or die "missing directory $bin";
+        -d $bin or die "missing directory $bin";
     }
 
     my ($asset) = grep { $_->{name} =~ /-$arch\.deb$/ } @{$self->{assets}};
@@ -72,7 +86,7 @@ sub download {
     my $url = $asset->{browser_download_url} or return;
     my $version = Pandoc::Version->new($self->{tag_name});
     my $deb = "$dir/".$asset->{name};
-    say $deb if $client->mirror($url, $deb)->{success} and $opts{verbose};
+    say $deb if $CLIENT->mirror($url, $deb)->{success} and $opts{verbose};
 
     if ($bin) {
         my $cmd = "dpkg --fsys-tarfile '$deb'"
@@ -80,7 +94,7 @@ sub download {
                 . "&& chmod +x '$bin/$version'";
         system($cmd) and die "failed to extract pandoc from $deb:\n $cmd";
         say "$bin/$version" if $opts{verbose};
-	}
+    }
 
     return $version;
 }
@@ -93,11 +107,15 @@ __END__
 
   use Pandoc::Release;
 
+  # get a specific release
+  my $release = Pandoc::Release->get('2.1.3');
+
+  # get multiple releases
   my @releases = Pandoc::Release->list(since => '2.0', verbose => 1);
   foreach my $release (@releases) {
 
       # print version number
-  	  say $release->{tag_name};
+      say $release->{tag_name};
 
       # download Debian package and executable
       $release->download(arch => 'amd64', dir => './deb', bin => './bin');
@@ -109,6 +127,12 @@ This utility module fetches information about pandoc releases via GitHub API.
 It requires at least Perl 5.14 or L<HTTP::Tiny> and L<JSON::PP> installed.
 
 =head1 METHODS
+
+=head2 get( $version [, verbose => 0|1 ] )
+
+Get a specific release by its version or die if the given version does not
+exist. Returns data as returned by GitHub releases API:
+L<https://developer.github.com/v3/repos/releases/#get-a-release-by-tag-name>.
 
 =head2 list( [ since => $version ] [ range => $range ] [, verbose => 0|1 ] )
 
