@@ -20,7 +20,7 @@ Pandoc::Release - get pandoc releases from GitHub
 
 =cut
 
-our $VERSION = '0.7.2';
+our $VERSION = '0.8.0';
 our $CLIENT = HTTP::Tiny->new;
 
 sub _api_request {
