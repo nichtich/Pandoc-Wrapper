@@ -95,13 +95,14 @@ sub download {
     say $deb if $CLIENT->mirror($url, $deb)->{success} and $opts{verbose};
 
     if ($bin) {
+        my $pandoc = "$bin/pandoc-$version";
         my $cmd = "dpkg --fsys-tarfile '$deb'"
-                . "| tar -x ./usr/bin/pandoc -O > '$bin/$version'"
-                . "&& chmod +x '$bin/$version'";
+                . "| tar -x ./usr/bin/pandoc -O > '$pandoc'"
+                . "&& chmod +x '$pandoc'";
         system($cmd) and die "failed to extract pandoc from $deb:\n $cmd";
-        say "$bin/$version" if $opts{verbose};
+        say "$pandoc" if $opts{verbose};
 
-        return Pandoc->new("$bin/$version");
+        return Pandoc->new("$pandoc");
     } else {
         return $version;
     }
@@ -158,8 +159,15 @@ Download the Debian release file for some architecture (e.g. C<amd64>) to
 directory C<dir>, unless already there. By default architecture is determined
 via calling C<dpkg> and download directory is a newly created temporary
 directory.  Optionally extract pandoc executables to directory C<bin>, each
-named by pandoc version number (e.g. C<2.1.2>).  Returns a L<Pandoc> instance
-if C<bin> is given or L<Pandoc::Version> otherwise.
+named by pandoc version number (e.g. C<pandoc-2.1.2>).
+
+You can download pandoc executables into subdirectory C<bin> of Pandoc user
+data directory and add this directory to your C<$PATH>:
+
+  $release->download( bin => $ENV{HOME}.'/.pandoc/bin' )
+
+Returns a L<Pandoc> instance if C<bin> is given or L<Pandoc::Version>
+otherwise.
 
 =head1 SEE ALSO
 

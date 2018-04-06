@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use Pandoc::Release;
 
-my $range = (join ',', @ARGV) || 0;
+my $range = join ',', @ARGV;
 my $verbose = 1;
 
 my @releases = $range =~ /^(==v?)?(\d+(\.\d)*)$/

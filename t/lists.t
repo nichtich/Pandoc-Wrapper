@@ -13,4 +13,5 @@ ok scalar @list > 5, 'input_formats';
 @list = pandoc->output_formats;
 ok scalar @list > 5, 'output_formats';
 
+#pandoc->version >= 1.18
 done_testing;
