@@ -39,11 +39,14 @@ Pandoc - wrapper for the mighty Pandoc document converter
     my $md2latex = Pandoc->new(qw(-f markdown -t latex --number-sections));
     $md2latex->run({ in => \$markdown, out => \$latex });
 
+    # create a new instance with selected executable
+    my $pandoc = Pandoc->new('bin/pandoc');
+    my $pandoc = Pandoc->new('2.1'); # use ~/.pandoc/bin/pandoc-2.1 if available
+
     # set default arguments on compile time
     use Pandoc qw(-t latex);
     use Pandoc qw(/usr/bin/pandoc --number-sections);
     use Pandoc qw(1.16 --number-sections);
-
 
     # utility method to convert from string
     $latex = pandoc->convert( 'markdown' => 'latex', '*hello*' );
@@ -132,12 +135,14 @@ references.
 
 # METHODS
 
-## new( \[ $executable \] \[, @arguments \] )
+## new( \[ $executable | $version \] \[, @arguments \] )
 
 Create a new instance of class Pandoc or throw an exception if no pandoc
-executable was found. The first argument, if given and not starting with `-`,
-can be used to set the pandoc executable (`pandoc` by default). Additional
-arguments are passed to the executable on each run.
+executable was found.  The first argument, if given and not starting with `-`,
+can be used to set the pandoc executable (`pandoc` by default).  If a version
+is specified the executable is also searched in `~/.pandoc/bin`, e.g.
+`~/.pandoc/bin/pandoc-2.0` for version `2.0`.  Additional arguments are
+passed to the executable on each run.
 
 Repeated use of this constructor with same arguments is not recommended because
 `pandoc --version` is called for every new instance.
@@ -221,6 +226,12 @@ Return a list of supported output formats.
 Return a list of programming languages which syntax highlighting is supported
 for (via Haskell library highlighting-kate).
 
+## extensions( \[ $format \] )
+
+Return a hash of extensions mapped to whether they are enabled by default.
+This method is only available since Pandoc 1.18 and the optional format
+argument since Pandoc 2.0.6.
+
 ## libs
 
 Return a hash mapping the names of Haskell libraries compiled into the
@@ -234,6 +245,9 @@ This package includes [Pandoc::Version](https://metacpan.org/pod/Pandoc::Version
 
 See [Pandoc::Elements](https://metacpan.org/pod/Pandoc::Elements) for a Perl interface to the abstract syntax tree of
 Pandoc documents for more elaborate document processing.
+
+See [Pod::Pandoc](https://metacpan.org/pod/Pod::Pandoc) to parse Plain Old Documentation format ([perlpod](https://metacpan.org/pod/perlpod)) for
+processing with Pandoc.
 
 See [Pandoc wrappers and interfaces](https://github.com/jgm/pandoc/wiki/Pandoc-wrappers-and-interfaces)
 in the Pandoc GitHub Wiki for a list of wrappers in other programming
