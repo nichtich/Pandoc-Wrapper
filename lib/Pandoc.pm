@@ -268,6 +268,33 @@ sub highlight_languages {
     $_[0]->_list('highlight_languages');
 }
 
+sub extensions {
+    my $pandoc = shift;
+    my $format = shift // '';
+    my $out = "";
+    my %ext;
+
+    if ($pandoc->version < 1.18) {
+        warn "pandoc >= 1.18 required for --list-extensions\n";
+    } else {
+        if ($format) {
+            if ($format =~ /^[a-z0-9_]$/ and $pandoc->version >= '2.0.6') {
+                $format = "=$format";
+            } else {
+                warn "ignoring format argument to Pandoc->extensions\n";
+                $format = '';
+            }
+        }
+        $pandoc->run("--list-extensions$format", { out => \$out });
+        %ext = map {
+          $_ =~ /^([+-]?)\s*([^-+ ]+)\s*([+-]?)$/;
+          ($2 => ($1 || $3) eq '+' ? 1 : 0);
+        } split /\n/, $out;
+    }
+
+    %ext;
+}
+
 sub libs {
     $_[0]->{libs};
 }
@@ -504,6 +531,12 @@ Return a list of supported output formats.
 
 Return a list of programming languages which syntax highlighting is supported
 for (via Haskell library highlighting-kate).
+
+=head2 extensions( [ $format ] )
+
+Return a hash of extensions mapped to whether they are enabled by default.
+This method is only available since Pandoc 1.18 and the optional format
+argument since Pandoc 2.0.6.
 
 =head2 libs
 
