@@ -37,6 +37,8 @@ sub _api_request {
 
 sub get {
     my ($class, $version, %opts) = @_;
+    warn "Pandoc release 1.17 had a bug, please don't use!\n"
+        if "$version" eq "1.17";
     my $url = "https://api.github.com/repos/jgm/pandoc/releases/tags/$version";
     bless _api_request($url, %opts)->{content}, $class;
 }
@@ -54,6 +56,7 @@ sub list {
         foreach (@{ $res->{content} }) {
             my $version = Pandoc::Version->new($_->{tag_name});
             last LOOP unless $since < $version; # abort if possible
+            next if $version == '1.17'; # version had a bug
             if (!$range || $version->fulfills($range)) {
                 push @releases, bless $_, $class;
             }
