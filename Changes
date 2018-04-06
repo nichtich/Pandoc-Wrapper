@@ -1,6 +1,8 @@
 Revision history for Pandoc Perl module
 
 {{$NEXT}}
+
+0.8.0  2018-04-06 12:28:03 CEST
     - Search executable in ~/.pandoc/bin
     - Download executables with 'pandoc-' prefix
     - Automatically detect Debian architecture for download releases
