@@ -46,7 +46,13 @@ sub new {
     my $pandoc = bless { }, shift;
 
     my $bin = (@_ and $_[0] !~ /^-./) ? shift : $PANDOC_PATH;
-    $pandoc->{bin} = which($bin);
+
+    my $bindir = $ENV{HOME}."/.pandoc/bin";
+    if (!-x $bin && $bin =~ /^\d+(\.\d+)*$/ && -x "$bindir/pandoc-$bin") {
+        $pandoc->{bin} = "$bindir/pandoc-$bin";
+    } else {
+        $pandoc->{bin} = which($bin);
+    }
 
     $pandoc->{arguments} = [];
     $pandoc->arguments(@_) if @_;
@@ -346,11 +352,14 @@ __END__
   my $md2latex = Pandoc->new(qw(-f markdown -t latex --number-sections));
   $md2latex->run({ in => \$markdown, out => \$latex });
 
+  # create a new instance with selected executable
+  my $pandoc = Pandoc->new('bin/pandoc');
+  my $pandoc = Pandoc->new('2.1'); # use ~/.pandoc/bin/pandoc-2.1 if available
+
   # set default arguments on compile time
   use Pandoc qw(-t latex);
   use Pandoc qw(/usr/bin/pandoc --number-sections);
   use Pandoc qw(1.16 --number-sections);
-
 
   # utility method to convert from string
   $latex = pandoc->convert( 'markdown' => 'latex', '*hello*' );
@@ -443,12 +452,14 @@ references.
 
 =head1 METHODS
 
-=head2 new( [ $executable ] [, @arguments ] )
+=head2 new( [ $executable | $version ] [, @arguments ] )
 
 Create a new instance of class Pandoc or throw an exception if no pandoc
-executable was found. The first argument, if given and not starting with C<->,
-can be used to set the pandoc executable (C<pandoc> by default). Additional
-arguments are passed to the executable on each run.
+executable was found.  The first argument, if given and not starting with C<->,
+can be used to set the pandoc executable (C<pandoc> by default).  If a version
+is specified the executable is also searched in C<~/.pandoc/bin>, e.g.
+C<~/.pandoc/bin/pandoc-2.0> for version C<2.0>.  Additional arguments are
+passed to the executable on each run.
 
 Repeated use of this constructor with same arguments is not recommended because
 C<pandoc --version> is called for every new instance.
