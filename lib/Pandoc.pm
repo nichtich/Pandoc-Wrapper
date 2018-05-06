@@ -221,7 +221,9 @@ sub data_dir {
 }
 
 sub pandoc_data_dir {
-    File::Spec->catdir($ENV{HOME} || $ENV{USERPROFILE}, '.pandoc', @_);
+    my $home = $ENV{HOME} || $ENV{USERPROFILE}
+        || File::Spec->catpath($ENV{HOMEDRIVE}, $ENV{HOMEPATH}, '');
+    File::Spec->catdir($home, '.pandoc', @_);
 }
 
 sub bin {
