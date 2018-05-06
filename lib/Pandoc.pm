@@ -320,7 +320,8 @@ __END__
 
 # STATUS
 
-[![Build Status](https://travis-ci.org/nichtich/Pandoc-Wrapper.svg)](https://travis-ci.org/nichtich/Pandoc-Wrapper)
+[![Linux Build Status](https://travis-ci.org/nichtich/Pandoc-Wrapper.svg)](https://travis-ci.org/nichtich/Pandoc-Wrapper)
+[![Windows Build Status](https://ci.appveyor.com/api/projects/status/8p68qdqv72to633d?svg=true)](https://ci.appveyor.com/project/nichtich/pandoc-wrapper)
 [![Coverage Status](https://coveralls.io/repos/nichtich/Pandoc-Wrapper/badge.svg)](https://coveralls.io/r/nichtich/Pandoc-Wrapper)
 [![Kwalitee Score](http://cpants.cpanauthors.org/dist/Pandoc.png)](http://cpants.cpanauthors.org/dist/Pandoc)
 
