@@ -1,6 +1,8 @@
 Revision history for Pandoc Perl module
 
 {{$NEXT}}
+
+0.8.1  2018-05-06 15:07:47 CEST
     - Add function pandoc_data_dir and extend method data_dir
 
 0.8.0  2018-04-06 12:28:03 CEST
