@@ -4,7 +4,8 @@ Pandoc - wrapper for the mighty Pandoc document converter
 
 # STATUS
 
-[![Build Status](https://travis-ci.org/nichtich/Pandoc-Wrapper.svg)](https://travis-ci.org/nichtich/Pandoc-Wrapper)
+[![Linux Build Status](https://travis-ci.org/nichtich/Pandoc-Wrapper.svg)](https://travis-ci.org/nichtich/Pandoc-Wrapper)
+[![Windows Build Status](https://ci.appveyor.com/api/projects/status/8p68qdqv72to633d?svg=true)](https://ci.appveyor.com/project/nichtich/pandoc-wrapper)
 [![Coverage Status](https://coveralls.io/repos/nichtich/Pandoc-Wrapper/badge.svg)](https://coveralls.io/r/nichtich/Pandoc-Wrapper)
 [![Kwalitee Score](http://cpants.cpanauthors.org/dist/Pandoc.png)](http://cpants.cpanauthors.org/dist/Pandoc)
 
@@ -99,6 +100,12 @@ the following ways:
     pandoc %options;                  # ok, if %options is not empty
 
     pandoc @arguments, %options;      # not ok!
+
+## pandoc\_data\_dir( \[ @subdirs \] \[ $file \] )
+
+Returns the default pandoc data directory which is directory `.pandoc` in the
+home directory. Optional arguments can be given to refer to a specific
+subdirectory or file.
 
 ### Options
 
@@ -209,9 +216,11 @@ version and data\_dir by calling `pandoc --version`.
 
 Return or set a list of default arguments.
 
-## data\_dir
+## data\_dir( \[ @subdirs \] \[ $file \] )
 
-Return the default data directory (only available since Pandoc 1.11).
+Return the stated default data directory, introduced with Pandoc 1.11.  Use
+function `pandoc_data_dir` alternatively to get the expected directory without
+calling Pandoc executable.
 
 ## input\_formats
 
