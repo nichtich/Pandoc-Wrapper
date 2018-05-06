@@ -16,6 +16,7 @@ our $VERSION = '0.8.0';
 use Pandoc::Version;
 use Carp 'croak';
 use File::Which;
+use File::Spec;
 use IPC::Run3;
 use parent 'Exporter';
 our @EXPORT = qw(pandoc);
@@ -216,7 +217,7 @@ sub version {
 }
 
 sub data_dir {
-    $_[0]->{data_dir};
+    File::Spec->catdir($_[0]->{data_dir}, @_);
 }
 
 sub bin {
@@ -526,9 +527,9 @@ version and data_dir by calling C<pandoc --version>.
 
 Return or set a list of default arguments.
 
-=head2 data_dir
+=head2 data_dir( [ @subdirs ] )
 
-Return the default data directory (only available since Pandoc 1.11).
+Return the default data directory, introduced with Pandoc 1.11.
 
 =head2 input_formats
 
