@@ -106,6 +106,11 @@ plan skip_all => 'pandoc executable required' unless pandoc;
     }
 }
 
+# pandoc_data_dir
+{
+   is catdir($ENV{HOME} || $ENV{USERDIR}, '.pandoc'), pandoc_data_dir, 'pandoc_data_dir';
+}
+
 # libs
 {
     is reftype(pandoc->libs), 'HASH', 'pandoc->libs';

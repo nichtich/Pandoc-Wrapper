@@ -19,7 +19,7 @@ use File::Which;
 use File::Spec;
 use IPC::Run3;
 use parent 'Exporter';
-our @EXPORT = qw(pandoc);
+our @EXPORT = qw(pandoc pandoc_data_dir);
 
 our $PANDOC;
 our $PANDOC_PATH ||= $ENV{PANDOC_PATH} || 'pandoc';
@@ -48,9 +48,9 @@ sub new {
 
     my $bin = (@_ and $_[0] !~ /^-./) ? shift : $PANDOC_PATH;
 
-    my $bindir = $ENV{HOME}."/.pandoc/bin";
-    if (!-x $bin && $bin =~ /^\d+(\.\d+)*$/ && -x "$bindir/pandoc-$bin") {
-        $pandoc->{bin} = "$bindir/pandoc-$bin";
+    my $bin_from_version = pandoc_data_dir("bin","pandoc-$bin");
+    if (!-x $bin && $bin =~ /^\d+(\.\d+)*$/ && -x $bin_from_version) {
+        $pandoc->{bin} = $bin_from_version;
     } else {
         $pandoc->{bin} = which($bin);
     }
@@ -217,7 +217,11 @@ sub version {
 }
 
 sub data_dir {
-    File::Spec->catdir($_[0]->{data_dir}, @_);
+    File::Spec->catdir(shift->{data_dir}, @_);
+}
+
+sub pandoc_data_dir {
+    File::Spec->catdir($ENV{HOME} || $ENV{USERPROFILE}, '.pandoc', @_);
 }
 
 sub bin {
@@ -414,6 +418,12 @@ the following ways:
 
   pandoc @arguments, %options;      # not ok!
 
+=head2 pandoc_data_dir( [ @subdirs ] [ $file ] )
+
+Returns the default pandoc data directory which is directory C<.pandoc> in the
+home directory. Optional arguments can be given to refer to a specific
+subdirectory or file.
+
 =head3 Options
 
 =over
@@ -527,9 +537,11 @@ version and data_dir by calling C<pandoc --version>.
 
 Return or set a list of default arguments.
 
-=head2 data_dir( [ @subdirs ] )
+=head2 data_dir( [ @subdirs ] [ $file ] )
 
-Return the default data directory, introduced with Pandoc 1.11.
+Return the stated default data directory, introduced with Pandoc 1.11.  Use
+function C<pandoc_data_dir> alternatively to get the expected directory without
+calling Pandoc executable.
 
 =head2 input_formats
 
