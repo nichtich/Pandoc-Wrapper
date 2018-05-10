@@ -12,4 +12,6 @@ build_script:
   - perl Build
 
 test_script:
-  - perl Build test
+  - perl Build test # test without Pandoc
+  - cinst -y pandoc
+  - perl Build test # test again with Pandoc
