@@ -62,8 +62,6 @@ Pandoc - wrapper for the mighty Pandoc document converter
 This module provides a Perl wrapper for John MacFarlane's
 [Pandoc](http://pandoc.org) document converter.
 
-## IMPORTING
-
 The utility function [pandoc](#pandoc) is exported, unless the module is
 imported with an empty list (`use Pandoc ();`).
 
@@ -101,13 +99,7 @@ the following ways:
 
     pandoc @arguments, %options;      # not ok!
 
-## pandoc\_data\_dir( \[ @subdirs \] \[ $file \] )
-
-Returns the default pandoc data directory which is directory `.pandoc` in the
-home directory. Optional arguments can be given to refer to a specific
-subdirectory or file.
-
-### Options
+The following options are recognized:
 
 - in / out / err
 
@@ -139,6 +131,12 @@ input/output must be UTF-8 encoded this is convenient if you run with
 [use utf8](https://metacpan.org/pod/utf8), as you then don't need to set the binmode options at
 all ([encode nor decode](https://metacpan.org/pod/Encode)) when passing input/output scalar
 references.
+
+## pandoc\_data\_dir( \[ @subdirs \] \[ $file \] )
+
+Returns the default pandoc data directory which is directory `.pandoc` in the
+home directory for Unix or `pandoc` directory in `%APPDATA%` for Windows.
+Optional arguments can be given to refer to a specific subdirectory or file.
 
 # METHODS
 
