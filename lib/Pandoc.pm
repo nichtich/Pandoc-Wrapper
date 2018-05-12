@@ -16,7 +16,7 @@ our $VERSION = '0.8.2';
 use Pandoc::Version;
 use Carp 'croak';
 use File::Which;
-use File::Spec;
+use File::Spec::Functions 'catdir';
 use IPC::Run3;
 use parent 'Exporter';
 our @EXPORT = qw(pandoc pandoc_data_dir);
@@ -217,13 +217,15 @@ sub version {
 }
 
 sub data_dir {
-    File::Spec->catdir(shift->{data_dir}, @_);
+    catdir(shift->{data_dir}, @_);
 }
 
 sub pandoc_data_dir {
-    my $home = $ENV{HOME} || $ENV{USERPROFILE}
-        || File::Spec->catpath($ENV{HOMEDRIVE}, $ENV{HOMEPATH}, '');
-    File::Spec->catdir($home, '.pandoc', @_);
+    if ($^O eq 'MSWin32') {
+        catdir($ENV{APPDATA}, 'pandoc', @_);
+    } else {
+        catdir($ENV{HOME}, '.pandoc', @_);
+    }
 }
 
 sub bin {
@@ -424,8 +426,8 @@ the following ways:
 =head2 pandoc_data_dir( [ @subdirs ] [ $file ] )
 
 Returns the default pandoc data directory which is directory C<.pandoc> in the
-home directory. Optional arguments can be given to refer to a specific
-subdirectory or file.
+home directory for Unix or C<pandoc> directory in C<%APPDATA%> for Windows.
+Optional arguments can be given to refer to a specific subdirectory or file.
 
 =head3 Options
 
