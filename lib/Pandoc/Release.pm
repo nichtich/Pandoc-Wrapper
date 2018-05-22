@@ -14,6 +14,9 @@ use File::Path qw(make_path remove_tree);
 use File::Copy 'move';
 use File::Temp 'tempdir';
 
+use parent 'Exporter';
+our @EXPORT = qw(get list latest);
+
 =head1 NAME
 
 Pandoc::Release - get pandoc releases from GitHub
@@ -36,17 +39,22 @@ sub _api_request {
 }
 
 sub get {
-    my ( $class, $version, %opts ) = @_;
+    shift if __PACKAGE__ eq ( $_[0] // '' );    # can also be used as method
+
+    my ( $version, %opts ) = @_;
     warn "Pandoc release 1.17 had a bug, please don't use!\n"
       if "$version" eq "1.17";
     my $url = "https://api.github.com/repos/jgm/pandoc/releases/tags/$version";
-    bless _api_request( $url, %opts )->{content}, $class;
+    bless _api_request( $url, %opts )->{content}, __PACKAGE__;
 }
 
 sub list {
-    my ( $class, %opts ) = @_;
+    shift if __PACKAGE__ eq ( $_[0] // '' );    # can also be used as method
+
+    my %opts = @_;
 
     my $range = $opts{range};
+    my $limit = $opts{limit} // -1;
     my $since = Pandoc::Version->new( $opts{since} // 0 );
     my $url   = "https://api.github.com/repos/jgm/pandoc/releases";
     my @releases;
@@ -58,7 +66,8 @@ sub list {
             last LOOP unless $since < $version;    # abort if possible
             next if $version == '1.17';            # version had a bug
             if ( !$range || $version->fulfills($range) ) {
-                push @releases, bless $_, $class;
+                push @releases, bless $_, __PACKAGE__;
+                last LOOP if --$limit == 0;
             }
         }
 
@@ -68,6 +77,12 @@ sub list {
     }
 
     @releases;
+}
+
+sub latest {
+    shift if __PACKAGE__ eq ( $_[0] // '' );    # can also be used as method
+
+    ( list( @_, limit => 1 ) )[0];
 }
 
 sub download {
@@ -119,31 +134,39 @@ __END__
 
 =head1 SYNOPSIS
 
+From command line:
+
+  perl -MPandoc::Release -E 'say latest->{name}'    # get latest release name
+
+In Perl code:
+
   use Pandoc::Release;
 
-  # get a specific release
-  my $release = Pandoc::Release->get('2.1.3');
+  my $release = get('2.1.3');   # get a specific release
+  my $latest = latest;          # get a latest release
 
   # get multiple releases
-  my @releases = Pandoc::Release->list(since => '2.0', verbose => 1);
+  my @releases = list( since => '2.0', verbose => 1 );
   foreach my $release (@releases) {
 
       # print version number
       say $release->{tag_name};
 
       # download Debian package and executable
-      $release->download(dir => './deb', bin => './bin');
+      $release->download( dir => './deb', bin => './bin' );
   }
 
   # download executable and use as temporary Pandoc object:
-  my $pandoc = Pandoc::Release->get('2.1.3)->download(bin => './bin');
+  my $pandoc = get('2.1.3)->download( bin => './bin' );
 
 =head1 DESCRIPTION
 
 This utility module fetches information about pandoc releases via GitHub API.
 It requires at least Perl 5.14 or L<HTTP::Tiny> and L<JSON::PP> installed.
 
-=head1 METHODS
+=head1 FUNCTIONS
+
+All functions are exported by default.
 
 =head2 get( $version [, verbose => 0|1 ] )
 
@@ -151,12 +174,20 @@ Get a specific release by its version or die if the given version does not
 exist. Returns data as returned by GitHub releases API:
 L<https://developer.github.com/v3/repos/releases/#get-a-release-by-tag-name>.
 
-=head2 list( [ since => $version ] [ range => $range ] [ verbose => 0|1 ] )
+=head2 list( ... )
 
-Get a list of all pandoc releases at GitHub, optionally since some version and
-within a version range such as C<!=1.16, <=1.17> or C<==2.1.2>. See
+Get a list of all pandoc releases, optionally C<since> some version or
+within a version C<range> such as C<!=1.16, <=1.17> or C<==2.1.2>. See
 L<CPAN::Meta::Spec/Version Ranges> for possible values. Option C<verbose> will
-print URLs before each request.
+print URLs before each request. Option C<limit> limits the maximum number
+of releases to be returned.
+
+=head2 latest( ... )
+
+Get the latest release, optionally C<since> some version or within a version
+C<range>. Equivalent to method C<list> with option C<< limit => 1 >>.
+
+=head1 METHODS
 
 =head2 download( [ dir => $dir ] [ arch => $arch ] [ bin => $bin ] [ verbose => 0|1] )
 

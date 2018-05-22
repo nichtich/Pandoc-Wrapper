@@ -409,7 +409,9 @@ __END__
 =head1 DESCRIPTION
 
 This module provides a Perl wrapper for John MacFarlane's
-L<Pandoc|http://pandoc.org> document converter.
+L<Pandoc|http://pandoc.org> document converter. See L<Installing
+pandoc|http://pandoc.org/installing.html> or L<Pandoc::Release> for
+installation of pandoc executables.
 
 The utility function L<pandoc|/pandoc> is exported, unless the module is
 imported with an empty list (C<use Pandoc ();>).
