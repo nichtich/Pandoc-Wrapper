@@ -60,7 +60,9 @@ Pandoc - wrapper for the mighty Pandoc document converter
 # DESCRIPTION
 
 This module provides a Perl wrapper for John MacFarlane's
-[Pandoc](http://pandoc.org) document converter.
+[Pandoc](http://pandoc.org) document converter. See [Installing
+pandoc](http://pandoc.org/installing.html) or [Pandoc::Release](https://metacpan.org/pod/Pandoc::Release) for
+installation of pandoc executables.
 
 The utility function [pandoc](#pandoc) is exported, unless the module is
 imported with an empty list (`use Pandoc ();`).
@@ -84,12 +86,10 @@ environment variable `PANDOC_PATH` (set to the string `pandoc` by default).
 ## pandoc( ... )
 
 If called with parameters, this functions runs the pandoc executable configured
-at the global instance of class Pandoc (`pandoc->bin`). Arguments are
-passed as command line arguments and options control input, output, and error
-stream as described below. Returns `0` on success.  Otherwise returns the the
-exit code of pandoc executable or `-1` if execution failed.  Arguments and
-options can be passed as plain array/hash or as (possibly empty) reference in
-the following ways:
+at the global instance of class Pandoc (`pandoc->bin`). Arguments (given
+as array or array reference) are passed as pandoc command line arguments.
+Additional options (given as hash or has reference) can control input, output,
+and error stream:
 
     pandoc @arguments, \%options;     # ok
     pandoc \@arguments, %options;     # ok
@@ -99,7 +99,9 @@ the following ways:
 
     pandoc @arguments, %options;      # not ok!
 
-The following options are recognized:
+Returns `0` on success. On error returns the exit code of pandoc executable or
+`-1` if execution failed. If option `throw` is set, a [Pandoc::Error](https://metacpan.org/pod/Pandoc::Error) is
+thrown instead. The following options are recognized:
 
 - in / out / err
 
@@ -116,9 +118,14 @@ The following options are recognized:
     If defined any binmode\_stdin/binmode\_stdout/binmode\_stderr option which
     is undefined will be set to this value.
 
+- throw
+
+    Throw a [Pandoc::Error](https://metacpan.org/pod/Pandoc::Error) instead returning the exit code on error. Disabled by
+    default.
+
 - return\_if\_system\_error
 
-    Set to true by default to return the exit code of pandoc executable.
+    Set to negation of option `throw` by default.
 
 For convenience the `pandoc` function (_after_ checking the `binmode`
 option) checks the contents of any scalar references passed to the
@@ -155,7 +162,7 @@ Repeated use of this constructor with same arguments is not recommended because
 ## run( ... )
 
 Execute the pandoc executable with default arguments and optional additional
-arguments and options. See [function pandoc](#functions) for usage.
+arguments and options. See [function pandoc](#pandoc) for usage.
 
 ## convert( $from => $to, $input \[, @arguments \] )
 

@@ -1,6 +1,7 @@
 Revision history for Pandoc Perl module
 
 {{$NEXT}}
+    - Introduce Pandoc::Error
     - Export Pandoc::Release methods as functions
     - Add Pandoc::Release::latest
     - Simplify download of new releases
