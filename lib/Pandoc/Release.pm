@@ -21,43 +21,43 @@ Pandoc::Release - get pandoc releases from GitHub
 =cut
 
 our $VERSION = '0.8.3';
-our $CLIENT = HTTP::Tiny->new;
+our $CLIENT  = HTTP::Tiny->new;
 
 sub _api_request {
-    my ($url, %opts) = @_;
+    my ( $url, %opts ) = @_;
 
     say $url if $opts{verbose};
     my $res = $CLIENT->get($url);
 
     $res->{success} or die "failed to fetch $url";
-    $res->{content} = JSON::PP::decode_json($res->{content});
+    $res->{content} = JSON::PP::decode_json( $res->{content} );
 
     $res;
 }
 
 sub get {
-    my ($class, $version, %opts) = @_;
+    my ( $class, $version, %opts ) = @_;
     warn "Pandoc release 1.17 had a bug, please don't use!\n"
-        if "$version" eq "1.17";
+      if "$version" eq "1.17";
     my $url = "https://api.github.com/repos/jgm/pandoc/releases/tags/$version";
-    bless _api_request($url, %opts)->{content}, $class;
+    bless _api_request( $url, %opts )->{content}, $class;
 }
 
 sub list {
-    my ($class, %opts) = @_;
+    my ( $class, %opts ) = @_;
 
     my $range = $opts{range};
-    my $since = Pandoc::Version->new($opts{since} // 0);
-    my $url = "https://api.github.com/repos/jgm/pandoc/releases";
+    my $since = Pandoc::Version->new( $opts{since} // 0 );
+    my $url   = "https://api.github.com/repos/jgm/pandoc/releases";
     my @releases;
 
-    LOOP: while ($url) {
-        my $res = _api_request($url, %opts);
-        foreach (@{ $res->{content} }) {
-            my $version = Pandoc::Version->new($_->{tag_name});
-            last LOOP unless $since < $version; # abort if possible
-            next if $version == '1.17'; # version had a bug
-            if (!$range || $version->fulfills($range)) {
+  LOOP: while ($url) {
+        my $res = _api_request( $url, %opts );
+        foreach ( @{ $res->{content} } ) {
+            my $version = Pandoc::Version->new( $_->{tag_name} );
+            last LOOP unless $since < $version;    # abort if possible
+            next if $version == '1.17';            # version had a bug
+            if ( !$range || $version->fulfills($range) ) {
                 push @releases, bless $_, $class;
             }
         }
@@ -71,9 +71,9 @@ sub list {
 }
 
 sub download {
-    my ($self, %opts) = @_;
+    my ( $self, %opts ) = @_;
 
-    my $dir = $opts{dir} // tempdir(CLEANUP => 1);
+    my $dir = $opts{dir} // tempdir( CLEANUP => 1 );
     my $arch = $opts{arch} // `dpkg --print-architecture`;
     chomp $arch;
     my $bin = $opts{bin};
@@ -85,28 +85,30 @@ sub download {
         -d $bin or die "missing directory $bin";
     }
 
-    my ($asset) = grep { $_->{name} =~ /-$arch\.deb$/ } @{$self->{assets}};
+    my ($asset) = grep { $_->{name} =~ /-$arch\.deb$/ } @{ $self->{assets} };
 
-    my $url = ($asset // {})->{browser_download_url} or do {
+    my $url = ( $asset // {} )->{browser_download_url} or do {
         say "release $self->{tag_name} contains no $arch Debian package"
-            if $opts{verbose};
+          if $opts{verbose};
         return;
     };
 
-    my $version = Pandoc::Version->new($self->{tag_name});
-    my $deb = "$dir/".$asset->{name};
-    say $deb if $CLIENT->mirror($url, $deb)->{success} and $opts{verbose};
+    my $version = Pandoc::Version->new( $self->{tag_name} );
+    my $deb     = "$dir/" . $asset->{name};
+    say $deb if $CLIENT->mirror( $url, $deb )->{success} and $opts{verbose};
 
     if ($bin) {
         my $pandoc = "$bin/pandoc-$version";
-        my $cmd = "dpkg --fsys-tarfile '$deb'"
-                . "| tar -x ./usr/bin/pandoc -O > '$pandoc'"
-                . "&& chmod +x '$pandoc'";
+        my $cmd =
+            "dpkg --fsys-tarfile '$deb'"
+          . "| tar -x ./usr/bin/pandoc -O > '$pandoc'"
+          . "&& chmod +x '$pandoc'";
         system($cmd) and die "failed to extract pandoc from $deb:\n $cmd";
         say "$pandoc" if $opts{verbose};
 
         return Pandoc->new("$pandoc");
-    } else {
+    }
+    else {
         return $version;
     }
 }
