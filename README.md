@@ -217,6 +217,15 @@ minimal version use one of:
 Return or set the pandoc executable. Setting an new executable also updates
 version and data\_dir by calling `pandoc --version`.
 
+## symlink( \[ $name \] \[ verbose => 0|1 \] )
+
+Create a symlink with given name to the executable and change executable to the
+symlink location afterwards. An existing symlink is replaced. If `$name` is an
+existing directory, the symlink will be named `pandoc` in there. This makes
+most sense if the directory is listed in environment variable `$PATH`. If the
+name is omitted or an empty string, symlink is created in subdirectory `bin`
+of pandoc data directory.
+
 ## arguments( \[ @arguments | \\@arguments )
 
 Return or set a list of default arguments.
