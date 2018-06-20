@@ -100,7 +100,8 @@ sub download {
         $bin = "$bin/pandoc-$version";
         if ( -f $bin ) {
             say "skipping existing $bin" if $opts{verbose};
-            return Pandoc->new($bin);
+            $pandoc = Pandoc->new($bin);
+            return $opts{link} ? $pandoc->symlink($opts{link}, %opts) : $pandoc;
         }
     }
 
@@ -130,7 +131,12 @@ sub download {
         system($cmd) and die "failed to extract pandoc from $deb:\n $cmd";
         say $bin if $opts{verbose};
 
-        return Pandoc->new($bin);
+        if ($opts{link}) {
+            -d $opts{link}
+        }
+
+        my $pandoc = Pandoc->new($bin);
+        return $opts{link} ? $pandoc->symlink($opts{link}, %opts) : $pandoc;
     }
     else {
         return $version;
@@ -202,21 +208,39 @@ C<range>. Equivalent to method C<list> with option C<< limit => 1 >>.
 
 =head1 METHODS
 
-=head2 download( [ dir => $dir ] [ arch => $arch ] [ bin => $bin ] [ verbose => 0|1] )
+=head2 download( %options )
 
-Download the Debian release file for some architecture (e.g. C<amd64>) to
-directory C<dir>, unless already there. By default architecture is determined
-via calling C<dpkg> and download directory is a newly created temporary
-directory.  Pandoc executables is then extracted to directory C<bin> named by
-pandoc version number (e.g. C<pandoc-2.1.2>). The default C<bin> directory is
-C<~/.pandoc/bin> on Unix (see L<Pandoc> function C<pandoc_data_dir>):
+Download the Debian release file for some architecture (e.g. C<amd64>), unless
+already there.  Pandoc executables is then extracted to directory C<bin> named
+by pandoc version number (e.g. C<pandoc-2.1.2>).
 
   $release->download( bin => pandoc_data_dir('bin') );
   $release->download;   # equivalent
 
-Extraction of executables can be disabled by setting C<bin> to a false value.
 Returns a L<Pandoc> instance if C<bin> is not false or L<Pandoc::Version>
 otherwise.
+
+=over
+
+=item dir
+
+Where to download release files to. A temporary directory is used by default.
+
+=item arch
+
+System architecture, detected with C<dpkg --print-architecture> by default.
+
+=item bin
+
+Where to extract pandoc binary to. By default set to C<~/.pandoc/bin> on Unix
+(see L<Pandoc> function C<pandoc_data_dir>).  Extraction of executables can be
+disabled by setting C<bin> to a false value.
+
+=item verbose
+
+Print what's going on (disabled by default).
+
+=back
 
 =head1 SEE ALSO
 

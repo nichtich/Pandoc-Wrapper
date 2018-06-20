@@ -341,6 +341,22 @@ sub libs {
     $_[0]->{libs};
 }
 
+sub symlink {
+    my ($self, $location, %opts) = @_;
+    
+    $location = "$location/pandoc" if -d $location;
+    
+    my $bin = $self->bin;
+    if (symlink $bin, $location) {
+        say "symlinked $location => $bin" if $opts{verbose};
+        $self->bin($location);
+    } else {
+        die "failed to create symlink $location => $bin\n"; 
+    }
+
+    $self;
+}
+
 1;
 
 __END__
