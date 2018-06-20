@@ -9,14 +9,16 @@ our $VERSION = '0.8.4';
 use HTTP::Tiny;
 use JSON::PP;
 
-use Pandoc;
-use Pandoc::Version;
 use Cwd;
 use File::Path qw(make_path remove_tree);
 use File::Copy 'move';
 use File::Temp 'tempdir';
 
+use Pandoc;
+use Pandoc::Version;
+
 use parent 'Exporter';
+
 our @EXPORT = qw(get list latest);
 
 =head1 NAME
