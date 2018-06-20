@@ -8,24 +8,20 @@ perl:
   - "5.16"
   - "5.14"
 
-# Ubuntu 14.04 includes pandoc 1.12.2.1 so better use it
-sudo: required
-dist: trusty
-
 install:
-  - sudo apt-get install pandoc
   - cpanm --installdeps .
   - cpanm --quiet --notest --skip-satisfied Dist::Milla
 
 before_script:
+  - export PATH=~/.pandoc/bin:$PATH
   - mkdir -p ~/.pandoc/filters
+  - perl -Ilib -MPandoc::Release -E 'say latest->download->symlink->bin'
+  - find ~/.pandoc
   - pandoc --version
 
 script:
   - milla smoke --release --author
   - cpanm --quiet --notest Pandoc::Elements
-  - yes | cpanm --quiet --uninstall Pandoc
-  - perl -Ilib t/parse.t 
 
 after_success:
   - cpanm --quiet --notest --skip-satisfied Devel::Cover::Report::Coveralls
