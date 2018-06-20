@@ -342,16 +342,25 @@ sub libs {
 }
 
 sub symlink {
-    my ($self, $location, %opts) = @_;
-    
-    $location = "$location/pandoc" if -d $location;
-    
+    my $self = shift;
+    my ( $name, %opts ) = @_ % 2 ? @_ : ( '', @_ );
+
+    if ( '' eq $name // '' ) {
+        $name = pandoc_data_dir( 'bin', 'pandoc' );
+    }
+    elsif ( -d $name ) {
+        $name = "$name/pandoc";
+    }
+
     my $bin = $self->bin;
-    if (symlink $bin, $location) {
-        say "symlinked $location => $bin" if $opts{verbose};
-        $self->bin($location);
-    } else {
-        die "failed to create symlink $location => $bin\n"; 
+
+    unlink $name if -l $name;
+    if ( symlink $bin, $name ) {
+        say "symlinked $name -> $bin" if $opts{verbose};
+        $self->bin($name);
+    }
+    else {
+        die "failed to create symlink $name -> $bin\n";
     }
 
     $self;
@@ -585,6 +594,15 @@ minimal version use one of:
 
 Return or set the pandoc executable. Setting an new executable also updates
 version and data_dir by calling C<pandoc --version>.
+
+=head2 symlink( [ $name ] [ verbose => 0|1 ] )
+
+Create a symlink with given name to the executable and change executable to the
+symlink location afterwards. An existing symlink is replaced. If C<$name> is an
+existing directory, the symlink will be named C<pandoc> in there. This makes
+most sense if the directory is listed in environment variable C<$PATH>. If the
+name is omitted or an empty string, symlink is created in subdirectory C<bin>
+of pandoc data directory.
 
 =head2 arguments( [ @arguments | \@arguments )
 

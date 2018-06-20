@@ -27,7 +27,7 @@ Pandoc::Release - get pandoc releases from GitHub
 
 =cut
 
-our $CLIENT  = HTTP::Tiny->new;
+our $CLIENT = HTTP::Tiny->new;
 
 sub _api_request {
     my ( $url, %opts ) = @_;
@@ -100,8 +100,10 @@ sub download {
         $bin = "$bin/pandoc-$version";
         if ( -f $bin ) {
             say "skipping existing $bin" if $opts{verbose};
-            $pandoc = Pandoc->new($bin);
-            return $opts{link} ? $pandoc->symlink($opts{link}, %opts) : $pandoc;
+            my $pandoc = Pandoc->new($bin);
+            $pandoc = $pandoc->symlink( $opts{symlink}, %opts )
+              if exists $opts{symlink};
+            return $pandoc;
         }
     }
 
@@ -131,12 +133,10 @@ sub download {
         system($cmd) and die "failed to extract pandoc from $deb:\n $cmd";
         say $bin if $opts{verbose};
 
-        if ($opts{link}) {
-            -d $opts{link}
-        }
-
         my $pandoc = Pandoc->new($bin);
-        return $opts{link} ? $pandoc->symlink($opts{link}, %opts) : $pandoc;
+        $pandoc = $pandoc->symlink( $opts{symlink}, %opts )
+          if exists $opts{symlink};
+        return $pandoc;
     }
     else {
         return $version;
@@ -156,6 +156,9 @@ From command line:
 
   # download latest release unless already in ~/.pandoc/bin
   perl -MPandoc::Release -E 'latest->download'
+
+  # same and create symlink ~/.pandoc/bin/pandoc
+  perl -MPandoc::Release -E 'latest->download->symlink'
 
 In Perl code:
 
@@ -182,6 +185,9 @@ In Perl code:
 
 This utility module fetches information about pandoc releases via GitHub API.
 It requires at least Perl 5.14 or L<HTTP::Tiny> and L<JSON::PP> installed.
+
+On Debian-bases systems, this module can update and switch locally installed
+pandoc versions if you add directory C<~/.pandoc/bin> to your C<$PATH>.
 
 =head1 FUNCTIONS
 
@@ -210,15 +216,11 @@ C<range>. Equivalent to method C<list> with option C<< limit => 1 >>.
 
 =head2 download( %options )
 
-Download the Debian release file for some architecture (e.g. C<amd64>), unless
-already there.  Pandoc executables is then extracted to directory C<bin> named
-by pandoc version number (e.g. C<pandoc-2.1.2>).
-
-  $release->download( bin => pandoc_data_dir('bin') );
-  $release->download;   # equivalent
-
-Returns a L<Pandoc> instance if C<bin> is not false or L<Pandoc::Version>
-otherwise.
+Download the Debian release file for some architecture (e.g. C<amd64>) Pandoc
+executables is then extracted to directory C<bin> named by pandoc version
+number (e.g. C<pandoc-2.1.2>). Skips downloading if an executable of this name
+is already found there.  Returns a L<Pandoc> instance if C<bin> is not false or
+L<Pandoc::Version> otherwise.
 
 =over
 
@@ -235,6 +237,14 @@ System architecture, detected with C<dpkg --print-architecture> by default.
 Where to extract pandoc binary to. By default set to C<~/.pandoc/bin> on Unix
 (see L<Pandoc> function C<pandoc_data_dir>).  Extraction of executables can be
 disabled by setting C<bin> to a false value.
+
+=item symlink
+
+Create a symlink to the executable. This is just a shortcut for calling function
+C<symlink> of L<Pandoc>:
+
+  $release->download( verbose => $v )->symlink( $l, verbose => $v )
+  $release->download( verbose => $v, symlink => $l )   # equivalent
 
 =item verbose
 
