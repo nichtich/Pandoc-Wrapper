@@ -434,19 +434,37 @@ __END__
 =head1 DESCRIPTION
 
 This module provides a Perl wrapper for John MacFarlane's
-L<Pandoc|http://pandoc.org> document converter. See L<Installing
-pandoc|http://pandoc.org/installing.html> or L<Pandoc::Release> for
-installation of pandoc executables.
+L<Pandoc|http://pandoc.org> document converter. 
+
+=head1 INSTALLATION
+
+This module requires the Perl programming language (>= version 5.14) as
+included in most Unix operating systems by default. The recommended method to
+install Perl modules is C<cpanm> (see its L<install
+instructions|https://metacpan.org/pod/App::cpanminus#INSTALLATION> if needed):
+
+  cpanm Pandoc
+
+Installing instruction for Pandoc itself are given L<at Pandoc
+homepage|http://pandoc.org/installing.html>. On Debian-based systems this
+module can be used to install and update the pandoc executable with
+L<Pandoc::Release>:
+
+  perl -MPandoc::Release -e 'latest->download->symlink'
+
+Then add C<~/.pandoc/bin> to your C<PATH> or copy C<~/.pandoc/bin/pandoc> to
+a location where it can be executed.
+
+=head1 USAGE
 
 The utility function L<pandoc|/pandoc> is exported, unless the module is
-imported with an empty list (C<use Pandoc ();>).
-
-Importing this module with a version number or a more complex version
-requirenment (e.g. C<use Pandoc 1.13;> or C<< use Pandoc '>= 1.6, !=1.7 >>)
-will check version number of pandoc executable instead of version number of
-this module (see C<$Pandoc::VERSION> for the latter). Additional import
-arguments can be passed to set the executable location and default arguments of
-the global Pandoc instance used by function pandoc.
+imported with an empty list (C<use Pandoc ();>). Importing this module with a
+version number or a more complex version requirenment (e.g. C<use Pandoc
+1.13;> or C<< use Pandoc '>= 1.6, !=1.7 >>) will check version number of
+pandoc executable instead of version number of this module (see
+C<$Pandoc::VERSION> for the latter). Additional import arguments can be passed
+to set the executable location and default arguments of the global Pandoc
+instance used by function pandoc.
 
 =head1 FUNCTIONS
 
