@@ -60,19 +60,4 @@ The error message. Also returned on stringification.
 This class does not inherit from L<Throwable>, L<Exception::Class> or
 L<Class::Exception> but may do so in a future version.
 
-=head1 AUTHOR
-
-Jakob Voß
-
-=head1 LICENSE
-
-    This software distribution is subject to the EUPL, Version 1.2 or subsequent
-    versions of the EUPL (the "Licence"); you may not use this file except in
-    compliance with the License. You may obtain a copy of the License at
-    <http://joinup.ec.europa.eu/software/page/eupl>
-
-    Software distributed under the License is distributed on an "AS IS" basis,
-    WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License for
-    the specific language governing rights and limitations under the License.
-
 =cut
