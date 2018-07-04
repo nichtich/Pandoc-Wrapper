@@ -685,6 +685,6 @@ Benct Philip Jonsson
 
 =head1 LICENSE
 
-GNU General Public License, Version 2
+European Union Public Licence v. 1.2 (EUPL-1.2)
 
 =cut
