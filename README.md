@@ -60,19 +60,37 @@ Pandoc - wrapper for the mighty Pandoc document converter
 # DESCRIPTION
 
 This module provides a Perl wrapper for John MacFarlane's
-[Pandoc](http://pandoc.org) document converter. See [Installing
-pandoc](http://pandoc.org/installing.html) or [Pandoc::Release](https://metacpan.org/pod/Pandoc::Release) for
-installation of pandoc executables.
+[Pandoc](http://pandoc.org) document converter. 
+
+# INSTALLATION
+
+This module requires the Perl programming language (>= version 5.14) as
+included in most Unix operating systems by default. The recommended method to
+install Perl modules is `cpanm` (see its [install
+instructions](https://metacpan.org/pod/App::cpanminus#INSTALLATION) if needed):
+
+    cpanm Pandoc
+
+Installing instruction for Pandoc itself are given [at Pandoc
+homepage](http://pandoc.org/installing.html). On Debian-based systems this
+module can be used to install and update the pandoc executable with
+[Pandoc::Release](https://metacpan.org/pod/Pandoc::Release):
+
+    perl -MPandoc::Release -e 'latest->download->symlink'
+
+Then add `~/.pandoc/bin` to your `PATH` or copy `~/.pandoc/bin/pandoc` to
+a location where it can be executed.
+
+# USAGE
 
 The utility function [pandoc](#pandoc) is exported, unless the module is
-imported with an empty list (`use Pandoc ();`).
-
-Importing this module with a version number or a more complex version
-requirenment (e.g. `use Pandoc 1.13;` or `use Pandoc '>= 1.6, !=1.7`)
-will check version number of pandoc executable instead of version number of
-this module (see `$Pandoc::VERSION` for the latter). Additional import
-arguments can be passed to set the executable location and default arguments of
-the global Pandoc instance used by function pandoc.
+imported with an empty list (`use Pandoc ();`). Importing this module with a
+version number or a more complex version requirenment (e.g. `use Pandoc
+1.13;` or `use Pandoc '>= 1.6, !=1.7`) will check version number of
+pandoc executable instead of version number of this module (see
+`$Pandoc::VERSION` for the latter). Additional import arguments can be passed
+to set the executable location and default arguments of the global Pandoc
+instance used by function pandoc.
 
 # FUNCTIONS
 
@@ -289,4 +307,4 @@ Benct Philip Jonsson
 
 # LICENSE
 
-GNU General Public License, Version 2
+European Union Public Licence v. 1.2 (EUPL-1.2)
