@@ -33,7 +33,10 @@ sub _api_request {
     my ( $url, %opts ) = @_;
 
     say $url if $opts{verbose};
-    my $res = $CLIENT->get($url);
+
+    my %headers =
+      $opts{token} ? ( Authorization => "token $opts{token}" ) : ();
+    my $res = $CLIENT->get( $url, { headers => \%headers } );
 
     $res->{success} or die "failed to fetch $url";
     $res->{content} = JSON::PP::decode_json( $res->{content} );
@@ -193,13 +196,13 @@ pandoc versions if you add directory C<~/.pandoc/bin> to your C<$PATH>.
 
 All functions are exported by default.
 
-=head2 get( $version [, verbose => 0|1 ] )
+=head2 get( $version, %options )
 
 Get a specific release by its version or die if the given version does not
 exist. Returns data as returned by GitHub releases API:
 L<https://developer.github.com/v3/repos/releases/#get-a-release-by-tag-name>.
 
-=head2 list( ... )
+=head2 list( %options )
 
 Get a list of all pandoc releases, optionally C<since> some version or
 within a version C<range> such as C<!=1.16, <=1.17> or C<==2.1.2>. See
@@ -207,7 +210,7 @@ L<CPAN::Meta::Spec/Version Ranges> for possible values. Option C<verbose> will
 print URLs before each request. Option C<limit> limits the maximum number
 of releases to be returned.
 
-=head2 latest( ... )
+=head2 latest( %options )
 
 Get the latest release, optionally C<since> some version or within a version
 C<range>. Equivalent to method C<list> with option C<< limit => 1 >>.
@@ -220,7 +223,7 @@ Download the Debian release file for some architecture (e.g. C<amd64>) Pandoc
 executables is then extracted to directory C<bin> named by pandoc version
 number (e.g. C<pandoc-2.1.2>). Skips downloading if an executable of this name
 is already found there.  Returns a L<Pandoc> instance if C<bin> is not false or
-L<Pandoc::Version> otherwise.
+L<Pandoc::Version> otherwise. Additional options:
 
 =over
 
@@ -246,9 +249,19 @@ C<symlink> of L<Pandoc>:
   $release->download( verbose => $v )->symlink( $l, verbose => $v )
   $release->download( verbose => $v, symlink => $l )   # equivalent
 
+=back
+
+=head1 COMMON OPTIONS
+
+=over
+
 =item verbose
 
 Print what's going on (disabled by default).
+
+=item token
+
+L<GitHub token|https://github.com/settings/tokens> to avoid rate limiting.
 
 =back
 
