@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use 5.010;
 
-our $VERSION = '0.8.6';
+our $VERSION = '0.8.7';
 
 use overload '""' => 'string', '0+' => 'number', 
     cmp => 'cmp', '<=>' => 'cmp', fallback => 1;

@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use 5.010;
 
-our $VERSION = '0.8.6';
+our $VERSION = '0.8.7';
 
 use overload '""' => 'message', fallback => 1;
 use Carp;

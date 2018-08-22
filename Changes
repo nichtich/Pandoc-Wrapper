@@ -1,6 +1,8 @@
 Revision history for Pandoc Perl module
 
 {{$NEXT}}
+
+0.8.7  2018-08-22 09:46:00 CEST
     - Optionally authentificate GitHub API request with token
 
 0.8.6  2018-07-04 09:39:52 CEST
