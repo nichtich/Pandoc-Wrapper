@@ -1,6 +1,8 @@
 Revision history for Pandoc Perl module
 
 {{$NEXT}}
+
+0.8.8  2018-08-24 10:42:00 CEST
     - Update dependencies, require Perl 5.14
  
 0.8.7  2018-08-22 09:46:00 CEST
