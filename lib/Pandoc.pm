@@ -1,7 +1,6 @@
 package Pandoc;
-use strict;
+use 5.014;
 use warnings;
-use 5.010;
 
 use utf8;
 

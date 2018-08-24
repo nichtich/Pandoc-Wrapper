@@ -1,11 +1,9 @@
 package Pandoc::Release;
-use strict;
+use 5.014;
 use warnings;
-use 5.010;
 
 our $VERSION = '0.8.7';
 
-# core modules since 5.014
 use HTTP::Tiny;
 use JSON::PP;
 
@@ -187,8 +185,6 @@ In Perl code:
 =head1 DESCRIPTION
 
 This utility module fetches information about pandoc releases via GitHub API.
-It requires at least Perl 5.14 or L<HTTP::Tiny> and L<JSON::PP> installed.
-
 On Debian-bases systems, this module can update and switch locally installed
 pandoc versions if you add directory C<~/.pandoc/bin> to your C<$PATH>.
 

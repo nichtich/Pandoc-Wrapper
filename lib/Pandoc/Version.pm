@@ -1,7 +1,6 @@
 package Pandoc::Version;
-use strict;
+use 5.014;
 use warnings;
-use 5.010;
 
 our $VERSION = '0.8.7';
 
