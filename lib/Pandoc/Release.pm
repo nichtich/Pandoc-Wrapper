@@ -263,6 +263,8 @@ L<GitHub token|https://github.com/settings/tokens> to avoid rate limiting.
 
 =head1 SEE ALSO
 
+L<Pandoc::Version>
+
 L<https://developer.github.com/v3/repos/releases/>
 
 =cut
