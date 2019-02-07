@@ -73,10 +73,10 @@ instructions](https://metacpan.org/pod/App::cpanminus#INSTALLATION) if needed):
 
 Installing instruction for Pandoc itself are given [at Pandoc
 homepage](http://pandoc.org/installing.html). On Debian-based systems this
-module can be used to install and update the pandoc executable with
-[Pandoc::Release](https://metacpan.org/pod/Pandoc::Release):
+module and script [pandoc-version](https://metacpan.org/pod/pandoc-version) can be used to install and update the
+pandoc executable with [Pandoc::Release](https://metacpan.org/pod/Pandoc::Release):
 
-    perl -MPandoc::Release -e 'latest->download->symlink'
+    pandoc-version install
 
 Then add `~/.pandoc/bin` to your `PATH` or copy `~/.pandoc/bin/pandoc` to
 a location where it can be executed.
