@@ -188,6 +188,8 @@ This utility module fetches information about pandoc releases via GitHub API.
 On Debian-bases systems, this module can update and switch locally installed
 pandoc versions if you add directory C<~/.pandoc/bin> to your C<$PATH>.
 
+See L<pandoc-version> for a command line script that makes use of this module.
+
 =head1 FUNCTIONS
 
 All functions are exported by default.

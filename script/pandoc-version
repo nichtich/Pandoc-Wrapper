@@ -27,9 +27,11 @@ if ($command =~ /^v(ersion)?$/) {
     say $_ for reverse sort @versions;
     closedir(DIR);
 
-# } elsif ($command =~ /^i(nstall)?$/) {
-
-    # TODO: implement and document install command
+} elsif ($command =~ /^i(nstall)?$/) {
+    
+    say "Installing latest release of Pandoc...";
+    my $pandoc = Pandoc::Release::latest->download;
+    $pandoc->symlink( verbose => 1 );
 
 } elsif ($command =~ /^u(se)?$/) {
     $version //= eval { Pandoc::Version->new($args[1]) } 
@@ -56,10 +58,11 @@ pandoc-version - switch pandoc executable
 pandoc-version [-v|--verbose] [command] [version]
 
  Commands:
-   h|help         show help
    v|version      show current version
    l|list         list installed versions
    u|use          switch version
+   i|nstall       install latest release version
+   h|help         show help
 
 =head1 DESCRIPTION
 
