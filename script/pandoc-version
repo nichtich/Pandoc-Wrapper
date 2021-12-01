@@ -24,7 +24,9 @@ if ($command =~ /^v(ersion)?$/) {
     opendir(DIR, $dir);
     my @files = grep { -e "$dir/$_" } grep(/^pandoc-/,readdir(DIR));
     my @versions = map { /^pandoc-(\d+(\.\d+)*)$/ ? Pandoc::Version->new($1) : () } @files;
-    say $_ for reverse sort { $a->cmp($b) } @versions;
+    for (reverse sort { $a->cmp($b) } @versions) {
+        say $_ eq pandoc->version ? "$_ <-" : $_;
+    }
     closedir(DIR);
 
 } elsif ($command =~ /^i(nstall)?$/) {
