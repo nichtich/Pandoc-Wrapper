@@ -13,7 +13,12 @@ sub load {
     my ($bin) = @{ $p->{args} };
 
     die "Usage: prove -Pandoc=EXECUTABLE ...\n" unless defined $bin;
-    die "Pandoc executable not found: $bin\n"   unless -x $bin;
+
+    if ( !-x $bin and -d pandoc_data_dir('bin') ) {
+        $bin = pandoc_data_dir( 'bin', "pandoc-$bin" );
+    }
+
+    die "Pandoc executable not found: $bin\n" unless -x $bin;
 
     # dies if executable is not pandoc
     my $pandoc = Pandoc->new($bin);
@@ -49,6 +54,7 @@ App::Prove::Plugin::andoc - Select pandoc executable for tests
 
 This plugin to L<prove> modifies PATH to use a selected pandoc executable
 before running tests. See L<Pandoc::Release> to download pandoc executables.
+Executables downloaded in C<~/.pandoc/bin> can be referenced by version number.
 
 =head1 SEE ALSO
 
