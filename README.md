@@ -74,7 +74,7 @@ instructions](https://metacpan.org/pod/App::cpanminus#INSTALLATION) if needed):
 Installing instruction for Pandoc itself are given [at Pandoc
 homepage](http://pandoc.org/installing.html). On Debian-based systems this
 module and script [pandoc-version](https://metacpan.org/pod/pandoc-version) can be used to install and update the
-pandoc executable with [Pandoc::Release](https://metacpan.org/pod/Pandoc::Release):
+pandoc executable with [Pandoc::Release](https://metacpan.org/pod/Pandoc%3A%3ARelease):
 
     pandoc-version install
 
@@ -118,17 +118,17 @@ and error stream:
     pandoc @arguments, %options;      # not ok!
 
 Returns `0` on success. On error returns the exit code of pandoc executable or
-`-1` if execution failed. If option `throw` is set, a [Pandoc::Error](https://metacpan.org/pod/Pandoc::Error) is
+`-1` if execution failed. If option `throw` is set, a [Pandoc::Error](https://metacpan.org/pod/Pandoc%3A%3AError) is
 thrown instead. The following options are recognized:
 
 - in / out / err
 
     These options correspond to arguments `$stdin`, `$stdout`, and
-    `$stderr` of [IPC::Run3](https://metacpan.org/pod/IPC::Run3), see there for details.
+    `$stderr` of [IPC::Run3](https://metacpan.org/pod/IPC%3A%3ARun3), see there for details.
 
 - binmode\_stdin / binmode\_stdout / binmode\_stderr
 
-    These options correspond to the like-named options to [IPC::Run3](https://metacpan.org/pod/IPC::Run3), see
+    These options correspond to the like-named options to [IPC::Run3](https://metacpan.org/pod/IPC%3A%3ARun3), see
     there for details.
 
 - binmode
@@ -138,7 +138,7 @@ thrown instead. The following options are recognized:
 
 - throw
 
-    Throw a [Pandoc::Error](https://metacpan.org/pod/Pandoc::Error) instead returning the exit code on error. Disabled by
+    Throw a [Pandoc::Error](https://metacpan.org/pod/Pandoc%3A%3AError) instead returning the exit code on error. Disabled by
     default.
 
 - return\_if\_system\_error
@@ -194,11 +194,11 @@ standard pandoc arguments `-f` and `-t`:
 
 ## parse( $from => $input \[, @arguments \] )
 
-Parse a string in format `$from` to a [Pandoc::Document](https://metacpan.org/pod/Pandoc::Document) object. Additional
+Parse a string in format `$from` to a [Pandoc::Document](https://metacpan.org/pod/Pandoc%3A%3ADocument) object. Additional
 pandoc options such as `-N` and `--normalize` can be passed. This method
-requires at least pandoc version 1.12.1 and the Perl module [Pandoc::Elements](https://metacpan.org/pod/Pandoc::Elements).
+requires at least pandoc version 1.12.1 and the Perl module [Pandoc::Elements](https://metacpan.org/pod/Pandoc%3A%3AElements).
 
-The reverse action is possible with method `to_pandoc` of [Pandoc::Document](https://metacpan.org/pod/Pandoc::Document).
+The reverse action is possible with method `to_pandoc` of [Pandoc::Document](https://metacpan.org/pod/Pandoc%3A%3ADocument).
 Additional shortcut methods such as `to_html` are available:
 
     $html = pandoc->parse( 'markdown' => '# A *section*' )->to_html;
@@ -208,10 +208,10 @@ modify or inspect the parsed document in between.
 
 ## file( \[ $filename \[, @arguments \] \] )
 
-Parse from a file (or STDIN) to a [Pandoc::Document](https://metacpan.org/pod/Pandoc::Document) object. Additional pandoc
+Parse from a file (or STDIN) to a [Pandoc::Document](https://metacpan.org/pod/Pandoc%3A%3ADocument) object. Additional pandoc
 options can be passed, for instance use HTML input format (`@arguments = qw(-f
 html)`) instead of default markdown. This method requires at least pandoc
-version 1.12.1 and the Perl module [Pandoc::Elements](https://metacpan.org/pod/Pandoc::Elements).
+version 1.12.1 and the Perl module [Pandoc::Elements](https://metacpan.org/pod/Pandoc%3A%3AElements).
 
 ## require( $version\_requirement )
 
@@ -222,7 +222,7 @@ throws a more meaningful error message if no pandoc executable was found.
 
 ## version( \[ $version\_requirement \] )
 
-Return the pandoc version as [Pandoc::Version](https://metacpan.org/pod/Pandoc::Version) object.  If a version
+Return the pandoc version as [Pandoc::Version](https://metacpan.org/pod/Pandoc%3A%3AVersion) object.  If a version
 requirement is given, the method returns undef if the pandoc version does not
 fulfill this requirement.  To check whether pandoc is available with a given
 minimal version use one of:
@@ -276,18 +276,18 @@ argument since Pandoc 2.0.6.
 ## libs
 
 Return a hash mapping the names of Haskell libraries compiled into the
-pandoc executable to [Pandoc::Version](https://metacpan.org/pod/Pandoc::Version) objects.
+pandoc executable to [Pandoc::Version](https://metacpan.org/pod/Pandoc%3A%3AVersion) objects.
 
 # SEE ALSO
 
-This package includes [Pandoc::Version](https://metacpan.org/pod/Pandoc::Version) to compare Pandoc version numbers,
-[Pandoc::Release](https://metacpan.org/pod/Pandoc::Release) to get Pandoc releases from GitHub, and
-[App::Prove::Plugin::andoc](https://metacpan.org/pod/App::Prove::Plugin::andoc) to run tests with selected Pandoc executables.
+This package includes [Pandoc::Version](https://metacpan.org/pod/Pandoc%3A%3AVersion) to compare Pandoc version numbers,
+[Pandoc::Release](https://metacpan.org/pod/Pandoc%3A%3ARelease) to get Pandoc releases from GitHub, and
+[App::Prove::Plugin::andoc](https://metacpan.org/pod/App%3A%3AProve%3A%3APlugin%3A%3Aandoc) to run tests with selected Pandoc executables.
 
-See [Pandoc::Elements](https://metacpan.org/pod/Pandoc::Elements) for a Perl interface to the abstract syntax tree of
+See [Pandoc::Elements](https://metacpan.org/pod/Pandoc%3A%3AElements) for a Perl interface to the abstract syntax tree of
 Pandoc documents for more elaborate document processing.
 
-See [Pod::Pandoc](https://metacpan.org/pod/Pod::Pandoc) to parse Plain Old Documentation format ([perlpod](https://metacpan.org/pod/perlpod)) for
+See [Pod::Pandoc](https://metacpan.org/pod/Pod%3A%3APandoc) to parse Plain Old Documentation format ([perlpod](https://metacpan.org/pod/perlpod)) for
 processing with Pandoc.
 
 See [Pandoc wrappers and interfaces](https://github.com/jgm/pandoc/wiki/Pandoc-wrappers-and-interfaces)
@@ -295,7 +295,7 @@ in the Pandoc GitHub Wiki for a list of wrappers in other programming
 languages.
 
 Other Pandoc related but outdated modules at CPAN include
-[Orze::Sources::Pandoc](https://metacpan.org/pod/Orze::Sources::Pandoc) and [App::PDoc](https://metacpan.org/pod/App::PDoc).
+[Orze::Sources::Pandoc](https://metacpan.org/pod/Orze%3A%3ASources%3A%3APandoc) and [App::PDoc](https://metacpan.org/pod/App%3A%3APDoc).
 
 # AUTHOR
 

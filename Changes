@@ -1,6 +1,8 @@
 Revision history for Pandoc Perl module
 
 {{$NEXT}}
+
+0.9.1 2021-12-01T14:02:41Z
     - Fix failing test for Pandoc >= 2.8
     - pica-version: support installing selected version
 
