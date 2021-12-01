@@ -23,8 +23,8 @@ if ($command =~ /^v(ersion)?$/) {
     my $dir = pandoc_data_dir( 'bin' );
     opendir(DIR, $dir);
     my @files = grep { -e "$dir/$_" } grep(/^pandoc-/,readdir(DIR));
-    my @versions = map { /^pandoc-(\d+(\.\d+)*)$/ ? $1 : () } @files;
-    say $_ for reverse sort @versions;
+    my @versions = map { /^pandoc-(\d+(\.\d+)*)$/ ? Pandoc::Version->new($1) : () } @files;
+    say $_ for reverse sort { $a->cmp($b) } @versions;
     closedir(DIR);
 
 } elsif ($command =~ /^i(nstall)?$/) {
