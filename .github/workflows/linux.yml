@@ -1,0 +1,60 @@
+name: linux
+
+on:
+  push:
+    branches: '*'
+  pull_request:
+    branches: [ main, dev ]
+  workflow_dispatch:
+    branches: '*'
+
+jobs:
+  perl:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        perl-version:
+        - '5.14'
+        - '5.16'
+        - '5.18'
+        - '5.20'
+        - '5.22'
+        - '5.24'
+        - '5.26'
+        - '5.28'
+        - '5.30'
+        include:
+          - perl-version: '5.32'
+            os: ubuntu-latest
+            release-test: true
+            coverage: true
+    container:
+      image: perl:${{ matrix.perl-version }}
+    steps:
+    - uses: actions/checkout@v2
+    - run: env | sort
+    - run: perl -V
+    - run: cpanm -n --installdeps .
+#    - run: |
+#        mkdir -p ~/.pandoc/bin
+#        echo "PATH=~/.pandoc/bin:$PATH" >> $GITHUB_ENV
+#    - name: Install Pandoc with pandoc-version
+#      run: |
+#        perl -Ilib/ script/pandoc-version install 2.8
+    - name: Run release tests
+      if: ${{ matrix.release-test }}
+      run: |
+        cpanm -n Perl::Tidy Test::Code::TidyAll Test::Perl::Critic
+        cpanm -n --installdeps --with-develop .
+        prove -lr xt
+    - name: Run tests (no coverage)
+      if: ${{ !matrix.coverage }}
+      run: prove -lr t
+    - name: Run tests (with coverage)
+      if: ${{ matrix.coverage }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        cpanm -n Devel::Cover::Report::Coveralls
+        perl Build.PL && ./Build build && cover -test -report coveralls

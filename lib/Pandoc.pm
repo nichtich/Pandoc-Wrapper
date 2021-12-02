@@ -72,7 +72,7 @@ sub new {
         );
     }
 
-    $pandoc->{version} = Pandoc::Version->new($1);
+    $pandoc->{version}  = Pandoc::Version->new($1);
     $pandoc->{data_dir} = $1 if $out =~ /^Default user data directory: (.+)$/m;
 
     # before pandoc supported --list-highlight-languages
@@ -229,7 +229,7 @@ sub require {
 }
 
 sub version {
-    my $pandoc = shift or return;
+    my $pandoc  = shift              or return;
     my $version = $pandoc->{version} or return;
 
     # compare against given version
@@ -375,7 +375,7 @@ __END__
 
 # STATUS
 
-[![Linux Build Status](https://travis-ci.org/nichtich/Pandoc-Wrapper.svg)](https://travis-ci.org/nichtich/Pandoc-Wrapper)
+[![Linux build status](https://github.com/nichtich/Pandoc-Wrapper/actions/workflows/linux.yml/badge.svg)](https://github.com/nichtich/Pandoc-Wrapper/actions/workflows/linux.yml)
 [![Windows Build Status](https://ci.appveyor.com/api/projects/status/8p68qdqv72to633d?svg=true)](https://ci.appveyor.com/project/nichtich/pandoc-wrapper)
 [![Coverage Status](https://coveralls.io/repos/nichtich/Pandoc-Wrapper/badge.svg)](https://coveralls.io/r/nichtich/Pandoc-Wrapper)
 [![Kwalitee Score](http://cpants.cpanauthors.org/dist/Pandoc.png)](http://cpants.cpanauthors.org/dist/Pandoc)
