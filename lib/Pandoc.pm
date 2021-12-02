@@ -680,7 +680,7 @@ Jakob Voß
 
 =head1 CONTRIBUTORS
 
-Benct Philip Jonsson
+Benct Philip Jonsson and Jonas Smedegaard
 
 =head1 LICENSE
 
