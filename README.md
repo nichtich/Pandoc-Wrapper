@@ -305,8 +305,6 @@ Jakob Voß
 
 Benct Philip Jonsson
 
-Dave Cross
-
 # LICENSE
 
 European Union Public Licence v. 1.2 (EUPL-1.2)
